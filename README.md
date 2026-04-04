@@ -88,7 +88,6 @@ Once installed it appears on your home screen like any other app and works compl
 
 ---
 
-
 <div align="center">
   <sub>Made with care · No trackers · No ads · No nonsense</sub>
   <br />
