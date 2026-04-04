@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#185fa5" id="theme-color-meta" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Monetrax" />
+  <meta name="description" content="Monetrax – Track Smarter. Live Better." />
+  <title>Monetrax</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- ══ SIDEBAR ══ -->
+  <nav class="sb" id="sb">
+    <div class="sb-logo">
+      <img src="icons/icon-192.png" alt="Monetrax" class="logo-img" />
+      <div class="logo-txt">
+        <div class="logo-name">Monetrax</div>
+        <div class="logo-sub">Track Smarter. Live Better.</div>
+      </div>
+    </div>
+
+    <div class="sb-nav">
+      <div class="nav-grp">Main</div>
+      <button class="ni act" data-page="dash" title="Dashboard">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        <span class="ni-lbl">Dashboard</span><span class="ni-tip">Dashboard</span>
+      </button>
+      <button class="ni" data-page="add" title="Add transaction">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v6M5 8h6"/></svg>
+        <span class="ni-lbl">Add transaction</span><span class="ni-tip">Add transaction</span>
+      </button>
+      <button class="ni" data-page="hist" title="History">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M2 8h8M2 12h5"/></svg>
+        <span class="ni-lbl">History</span><span class="ni-tip">History</span>
+      </button>
+      <button class="ni" data-page="cart" title="Shopping cart">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 2h1.5l2 7h7l1.5-5H5"/><circle cx="6.5" cy="13" r="1"/><circle cx="12" cy="13" r="1"/></svg>
+        <span class="ni-lbl">Shopping cart</span><span class="ni-tip">Shopping cart</span>
+      </button>
+      <button class="ni" data-page="recur" title="Recurring">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 8a7 7 0 1 0 7-7"/><path d="M4 1l4 4-4 4"/></svg>
+        <span class="ni-lbl">Recurring</span><span class="ni-tip">Recurring</span>
+      </button>
+
+      <div class="nav-grp">Analysis</div>
+      <button class="ni" data-page="budget" title="Budget">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 12L5 7l3 3 3-5 4 3"/></svg>
+        <span class="ni-lbl">Budget</span><span class="ni-tip">Budget</span>
+      </button>
+      <button class="ni" data-page="cats" title="Categories">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 8L8 2A6 6 0 0 1 14 8Z"/></svg>
+        <span class="ni-lbl">Categories</span><span class="ni-tip">Categories</span>
+      </button>
+      <button class="ni" data-page="slist" title="Shopping list">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="1" width="12" height="14" rx="1"/><path d="M5.5 5h6M5.5 8h6M5.5 11h3.5"/><circle cx="3.5" cy="5" r=".6" fill="currentColor"/><circle cx="3.5" cy="8" r=".6" fill="currentColor"/><circle cx="3.5" cy="11" r=".6" fill="currentColor"/></svg>
+        <span class="ni-lbl">Shopping list</span><span class="ni-tip">Shopping list</span>
+      </button>
+      <button class="ni" data-page="accs" title="Accounts">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="4" width="14" height="10" rx="1.5"/><path d="M4 4V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v1M1 8h14"/></svg>
+        <span class="ni-lbl">Accounts</span><span class="ni-tip">Accounts</span>
+      </button>
+      <button class="ni" data-page="ai" title="AI Insights">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2z"/><path d="M8 6v3M8 11v.5"/></svg>
+        <span class="ni-lbl">AI Insights</span><span class="ni-tip">AI Insights</span>
+      </button>
+    </div>
+
+    <div class="sb-foot">
+      <div class="foot-ico">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="2" width="14" height="13" rx="1.5"/><path d="M1 6h14M5 2v2M11 2v2"/></svg>
+      </div>
+      <div class="foot-wrap">
+        <div class="foot-lbl">Viewing month</div>
+        <select class="msell" id="msel"></select>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main" style="position:relative">
+
+    <!-- Install banner (PWA prompt) -->
+    <div class="install-banner" id="install-banner">
+      <img src="icons/icon-48.png" style="width:22px;height:22px;border-radius:5px" alt="" />
+      <span>Install Monetrax for offline access</span>
+      <button id="install-btn">Install</button>
+      <button onclick="document.getElementById('install-banner').classList.remove('show')" style="border:none;background:none;color:#fff;cursor:pointer;font-size:16px;padding:0 4px">×</button>
+    </div>
+
+    <div class="topbar">
+      <div class="tb-l">
+        <button class="icon-btn" id="sb-toggle" title="Toggle sidebar">
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="13" height="13" rx="2"/><path d="M5 1v13"/></svg>
+        </button>
+        <div>
+          <div class="pg-title" id="pg-title">Dashboard</div>
+        </div>
+      </div>
+      <div class="tb-r">
+        <span class="bal-pill" id="top-bal">Balance: —</span>
+        <select class="cur-sel" id="cur-sel" title="Currency">
+          <option value="€">€ EUR</option>
+          <option value="$">$ USD</option>
+          <option value="£">£ GBP</option>
+          <option value="₹">₹ INR</option>
+          <option value="¥">¥ JPY</option>
+          <option value="Fr">Fr CHF</option>
+          <option value="kr">kr SEK</option>
+          <option value="zł">zł PLN</option>
+        </select>
+        <button class="icon-btn" id="export-btn" title="Export CSV">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v9M5 8l3 3 3-3M2 13h12"/></svg>
+          <span>Export</span>
+        </button>
+        <button class="icon-btn" id="dark-btn">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" id="dark-ic"><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/><circle cx="8" cy="8" r="3"/></svg>
+          <span id="dark-lbl">Dark</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <section id="s-dash" class="screen active">
+        <div class="mg">
+          <div class="met"><div class="met-l">Income (month)</div><div class="met-v g" id="d-inc">—</div></div>
+          <div class="met"><div class="met-l">Expenses (month)</div><div class="met-v r" id="d-exp">—</div></div>
+          <div class="met"><div class="met-l">Net balance</div><div class="met-v b" id="d-bal">—</div></div>
+        </div>
+        <div class="ig">
+          <div class="ins" style="border-color:#1d9e75">
+            <div class="ins-lbl">Savings rate</div>
+            <div class="ins-val" id="i-sav">—</div>
+            <div class="ins-sub">of income</div>
+          </div>
+          <div class="ins" style="border-color:#d85a30">
+            <div class="ins-lbl">Top category</div>
+            <div class="ins-val" style="font-size:13px;line-height:1.3;color:var(--t)" id="i-cat">—</div>
+            <div class="ins-sub" id="i-cat-a"></div>
+          </div>
+          <div class="ins" style="border-color:#7f77dd">
+            <div class="ins-lbl">Avg daily spend</div>
+            <div class="ins-val" id="i-daily">—</div>
+            <div class="ins-sub" id="i-daily-s">this month</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h">
+            6-month trend
+            <div class="ct-wrap">
+              <button class="ct act" id="ct-bar">Bar</button>
+              <button class="ct" id="ct-line">Line</button>
+            </div>
+          </div>
+          <div class="cw sm"><canvas id="trendChart"></canvas></div>
+          <div class="lg">
+            <span class="ld"><span class="ldot" style="background:#9fe1cb"></span>Income</span>
+            <span class="ld"><span class="ldot" style="background:#f5c4b3"></span>Expenses</span>
+          </div>
+        </div>
+        <div class="card"><div class="card-h">Recent transactions</div><div id="recent"></div></div>
+      </section>
+
+      <!-- ADD TRANSACTION -->
+      <section id="s-add" class="screen">
+        <div class="add-tabs">
+          <button class="at act" data-tab="inc">Income</button>
+          <button class="at" data-tab="exp">Expense</button>
+          <button class="at" data-tab="trf">Transfer</button>
+        </div>
+        <!-- Income -->
+        <div id="ap-inc" class="ap act">
+          <div class="card">
+            <div class="fg fg2">
+              <div class="fld"><label>Amount</label><input type="number" id="i-amt" placeholder="0.00" min="0" step="0.01" /></div>
+              <div class="fld"><label>Source</label>
+                <div class="cw-inp">
+                  <input type="text" id="i-src" placeholder="e.g. Salary" autocomplete="off" />
+                  <span class="cw-arr">▾</span>
+                  <div class="sugg" id="i-src-s"></div>
+                </div>
+              </div>
+            </div>
+            <div class="fg fg3">
+              <div class="fld"><label>Date</label><input type="date" id="i-date" /></div>
+              <div class="fld"><label>Account</label><select id="i-acc"></select></div>
+              <div class="fld" style="display:flex;align-items:flex-end"><button class="btn pri" id="add-inc-btn" style="width:100%">Add income</button></div>
+            </div>
+          </div>
+        </div>
+        <!-- Expense -->
+        <div id="ap-exp" class="ap">
+          <div class="card">
+            <div class="fg fg3">
+              <div class="fld"><label>Amount</label><input type="number" id="e-amt" placeholder="0.00" min="0" step="0.01" /></div>
+              <div class="fld"><label>Description</label>
+                <div class="cw-inp">
+                  <input type="text" id="e-dsc" placeholder="e.g. Aldi" autocomplete="off" />
+                  <span class="cw-arr">▾</span>
+                  <div class="sugg" id="e-dsc-s"></div>
+                </div>
+              </div>
+              <div class="fld"><label>Category</label>
+                <select id="e-cat">
+                  <option>🏠 Housing</option><option>🍔 Food</option><option>🚗 Transport</option>
+                  <option>💊 Health</option><option>🎮 Entertainment</option><option>👗 Clothing</option>
+                  <option>📚 Education</option><option>💡 Utilities</option><option>✈️ Travel</option>
+                  <option>🛒 Shopping</option><option>📦 Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="fg fg3">
+              <div class="fld"><label>Date</label><input type="date" id="e-date" /></div>
+              <div class="fld"><label>Account</label><select id="e-acc"></select></div>
+              <div class="fld"><label>Budget type</label>
+                <select id="e-btype">
+                  <option value="needs">Needs (50%)</option>
+                  <option value="wants">Wants (30%)</option>
+                  <option value="savings">Savings (20%)</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn pri" id="add-exp-btn">Add expense</button>
+          </div>
+        </div>
+        <!-- Transfer -->
+        <div id="ap-trf" class="ap">
+          <div class="card" style="border-color:#b5d4f4">
+            <p style="font-size:11px;color:var(--t3);margin-bottom:9px">
+              <span style="color:var(--inc);font-weight:500">Received / Added</span> → balance ↑ &nbsp;·&nbsp;
+              <span style="color:var(--exp);font-weight:500">Sent</span> → balance ↓
+            </p>
+            <div class="fg fg4">
+              <div class="fld"><label>Amount</label><input type="number" id="t-amt" placeholder="0.00" min="0" step="0.01" /></div>
+              <div class="fld"><label>Person / Account</label><input type="text" id="t-name" placeholder="e.g. John" /></div>
+              <div class="fld"><label>Type</label>
+                <select id="t-type">
+                  <option value="recv">↙ Received from friend</option>
+                  <option value="sent">↗ Sent to friend</option>
+                  <option value="adde">🏦 Added from account</option>
+                </select>
+              </div>
+              <div class="fld"><label>Date</label><input type="date" id="t-date" /></div>
+            </div>
+            <div class="fg fg2" style="margin-bottom:8px">
+              <div class="fld"><label>Note (optional)</label><input type="text" id="t-note" placeholder="e.g. Dinner split" /></div>
+              <div class="fld" style="display:flex;align-items:flex-end"><button class="btn pri" id="add-trf-btn" style="width:100%">Add transfer</button></div>
+            </div>
+            <div class="tp" id="tp"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HISTORY -->
+      <section id="s-hist" class="screen">
+        <div class="hist-bar">
+          <div class="search-row">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M11 11l3 3"/></svg>
+            <input type="text" id="h-search" placeholder="Search by name, category, amount…" />
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn sm" id="hist-export-btn">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v9M5 8l3 3 3-3M2 13h12"/></svg>
+              Export
+            </button>
+            <button class="btn sm del" id="clear-month-btn">Clear month</button>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:7px" id="h-count"></div>
+        <div class="card"><div id="hist-list"></div></div>
+      </section>
+
+      <!-- SHOPPING CART -->
+      <section id="s-cart" class="screen">
+        <div class="card">
+          <div class="card-h">Add item</div>
+          <div style="display:flex;gap:8px;margin-bottom:9px;align-items:flex-end;flex-wrap:wrap">
+            <div class="fld" style="flex:1;min-width:120px"><label>Product</label>
+              <div class="cw-inp">
+                <input type="text" id="sh-n" placeholder="e.g. Milk" autocomplete="off" />
+                <span class="cw-arr">▾</span>
+                <div class="sugg" id="sh-n-s"></div>
+              </div>
+            </div>
+            <div class="fld" style="flex:0 0 100px"><label>Price/unit</label><input type="number" id="sh-p" placeholder="0.00" min="0" step="0.01" /></div>
+            <div class="fld" style="flex:0 0 64px"><label>Qty</label><input type="number" id="sh-q" value="1" min="1" /></div>
+            <div style="padding-bottom:1px"><button class="btn pri" id="cart-add-btn">Add</button></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+            <div class="fld" style="flex:0 0 155px"><label>Budget cap (optional)</label><input type="number" id="sh-cap" placeholder="e.g. 60" min="0" step="0.01" /></div>
+            <div style="padding-bottom:1px"><button class="btn sm del" id="cart-clear-btn">Clear cart</button></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h">Cart <span id="sh-cnt" style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)"></span></div>
+          <div id="cart-items"><div class="empty">Cart is empty.</div></div>
+          <div id="cart-foot"></div>
+        </div>
+        <div id="cart-checkout" class="card" style="display:none">
+          <div class="card-h">Save as expense</div>
+          <div class="fg fg2">
+            <div class="fld"><label>Date</label><input type="date" id="sh-date" /></div>
+            <div class="fld"><label>Budget type</label><select id="sh-bt"><option value="needs">Needs</option><option value="wants">Wants</option></select></div>
+          </div>
+          <button class="btn ok" id="cart-checkout-btn">Confirm &amp; clear cart</button>
+        </div>
+      </section>
+
+      <!-- RECURRING -->
+      <section id="s-recur" class="screen">
+        <div class="card">
+          <div class="card-h">Add recurring transaction</div>
+          <div class="fg fg3">
+            <div class="fld"><label>Name</label><input type="text" id="rc-n" placeholder="e.g. Rent, Netflix" /></div>
+            <div class="fld"><label>Amount</label><input type="number" id="rc-amt" placeholder="0.00" min="0" step="0.01" /></div>
+            <div class="fld"><label>Type</label><select id="rc-type"><option value="expense">Expense</option><option value="income">Income</option></select></div>
+          </div>
+          <div class="fg fg3">
+            <div class="fld"><label>Category</label>
+              <select id="rc-cat"><option>🏠 Housing</option><option>🍔 Food</option><option>💡 Utilities</option><option>🎮 Entertainment</option><option>💊 Health</option><option>📚 Education</option><option>💰 Income</option><option>📦 Other</option></select>
+            </div>
+            <div class="fld"><label>Day of month</label><input type="number" id="rc-day" placeholder="1–28" min="1" max="28" value="1" /></div>
+            <div class="fld" style="display:flex;align-items:flex-end"><button class="btn pri" id="recur-add-btn" style="width:100%">Add recurring</button></div>
+          </div>
+        </div>
+        <div class="card"><div class="card-h">Due this month</div><div id="due-list"><div class="empty">Nothing due.</div></div></div>
+        <div class="card"><div class="card-h">All recurring</div><div id="recur-list"><div class="empty">No recurring set up.</div></div></div>
+      </section>
+
+      <!-- BUDGET -->
+      <section id="s-budget" class="screen">
+        <div class="card">
+          <div class="card-h">50 / 30 / 20 rule</div>
+          <div class="fld" style="margin-bottom:10px"><label>Income target — leave blank to use logged income</label><input type="number" id="b-inc" placeholder="Monthly income" /></div>
+          <div id="b-bars"></div>
+          <div class="rc" id="b-rule"></div>
+        </div>
+      </section>
+
+      <!-- CATEGORIES -->
+      <section id="s-cats" class="screen">
+        <div class="card"><div class="card-h">Spending by category</div><div class="cw"><canvas id="catChart"></canvas></div><div class="lg" id="cat-leg"></div></div>
+        <div class="card"><div class="card-h">Breakdown</div><div id="cat-bd"></div></div>
+      </section>
+
+      <!-- SHOPPING LIST -->
+      <section id="s-slist" class="screen">
+        <div class="card">
+          <div class="card-h">Add to list</div>
+          <div id="dup-warn" class="warn" style="display:none;background:var(--wo);color:var(--wot)"></div>
+          <div class="fg fg3" style="margin-bottom:8px">
+            <div class="fld"><label>Item</label>
+              <div class="cw-inp">
+                <input type="text" id="sl-n" placeholder="e.g. Eggs, Coffee" autocomplete="off" />
+                <span class="cw-arr">▾</span>
+                <div class="sugg" id="sl-n-s"></div>
+              </div>
+            </div>
+            <div class="fld"><label>Qty / note</label><input type="text" id="sl-q" placeholder="e.g. 2 packs" /></div>
+            <div class="fld" style="display:flex;align-items:flex-end"><button class="btn pri" id="sl-add-btn" style="width:100%">Add</button></div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn sm ok" id="sl-done-btn">Clear purchased</button>
+            <button class="btn sm del" id="sl-all-btn">Clear all</button>
+          </div>
+        </div>
+        <div class="card"><div id="sl-list"><div class="empty">List is empty.</div></div></div>
+      </section>
+
+      <!-- ACCOUNTS -->
+      <section id="s-accs" class="screen">
+        <div class="card">
+          <div class="card-h">Add account</div>
+          <div class="fg fg3">
+            <div class="fld"><label>Name</label><input type="text" id="ac-n" placeholder="e.g. Main bank" /></div>
+            <div class="fld"><label>Type</label>
+              <select id="ac-type">
+                <option value="bank">🏦 Bank</option>
+                <option value="cash">💵 Cash</option>
+                <option value="savings">💰 Savings</option>
+                <option value="card">💳 Card</option>
+              </select>
+            </div>
+            <div class="fld" style="display:flex;align-items:flex-end"><button class="btn pri" id="acc-add-btn" style="width:100%">Add account</button></div>
+          </div>
+        </div>
+        <div class="acc-grid" id="acc-grid"><div class="empty" style="grid-column:1/-1">No accounts yet.</div></div>
+      </section>
+
+      <!-- AI INSIGHTS -->
+      <section id="s-ai" class="screen">
+        <div class="ai-card">
+          <div class="ai-title">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2z"/><path d="M8 6v3M8 11v.5"/></svg>
+            AI Insights — Powered by your data
+          </div>
+          <div id="ai-body"><div class="ai-spin">Analysing your transactions…</div></div>
+        </div>
+        <div class="card"><div class="card-h">3-month comparison</div><div class="cw sm"><canvas id="cmpChart"></canvas></div></div>
+      </section>
+
+    </div><!-- content -->
+    <div class="toast" id="toast"></div>
+  </div><!-- main -->
+</div><!-- shell -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
