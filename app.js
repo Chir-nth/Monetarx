@@ -860,34 +860,69 @@ function exportCSV() {
 
 /* ══════════════════════════════════════════
    PWA — SERVICE WORKER & INSTALL PROMPT
+   Handles both iOS Safari and Android Chrome
 ══════════════════════════════════════════ */
 let _installPrompt = null;
 
+/* ── Service Worker registration ── */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(reg => {
+        // Check for updates every time the app loads
+        reg.update();
+      })
+      .catch(() => {});
   });
 }
 
+/* ── Android / Chrome: native install prompt ── */
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   _installPrompt = e;
-  $('install-banner').classList.add('show');
+  const banner = $('install-banner');
+  if (banner) banner.style.display = 'flex';
 });
 
-$('install-btn').addEventListener('click', async () => {
-  if (!_installPrompt) return;
-  _installPrompt.prompt();
-  const { outcome } = await _installPrompt.userChoice;
-  if (outcome === 'accepted') toast('Monetrax installed! Find it on your home screen.');
-  _installPrompt = null;
-  $('install-banner').classList.remove('show');
-});
+const installBtn = $('install-btn');
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (!_installPrompt) return;
+    _installPrompt.prompt();
+    const { outcome } = await _installPrompt.userChoice;
+    if (outcome === 'accepted') toast('Monetrax installed! Check your home screen.');
+    _installPrompt = null;
+    const banner = $('install-banner');
+    if (banner) banner.style.display = 'none';
+  });
+}
 
 window.addEventListener('appinstalled', () => {
-  $('install-banner').classList.remove('show');
-  toast('Monetrax installed successfully!');
+  const banner = $('install-banner');
+  if (banner) banner.style.display = 'none';
+  toast('Monetrax installed!');
 });
+
+/* ── iOS Safari: show "Add to Home Screen" nudge ──
+   iOS does not fire beforeinstallprompt — we detect Safari manually.
+   We only show the nudge when:
+     1. Running in Safari (not already installed as standalone)
+     2. On iOS / iPadOS
+     3. Not already dismissed this session
+── */
+(function checkiOSInstall() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isStandalone = window.navigator.standalone === true ||
+                       window.matchMedia('(display-mode: standalone)').matches;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const nudge = $('ios-nudge');
+
+  if (nudge && isIOS && isSafari && !isStandalone) {
+    // Small delay so the app paints first
+    setTimeout(() => { nudge.style.display = 'flex'; }, 1200);
+  }
+})();
 
 /* ══════════════════════════════════════════
    EVENT WIRING

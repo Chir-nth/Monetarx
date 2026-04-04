@@ -2,25 +2,70 @@
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#185fa5" id="theme-color-meta" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Monetrax" />
-  <meta name="description" content="Monetrax – Track Smarter. Live Better." />
-  <title>Monetrax</title>
+
+  <!-- ── VIEWPORT: no zoom, fits all phones ── -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+  <!-- ── PWA MANIFEST ── -->
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icons/icon-192.png" />
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <!-- ── ANDROID: Chrome theme colour ── -->
+  <meta name="theme-color" content="#185fa5" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
+  <!-- ── iOS: Required for "Add to Home Screen" to work as a standalone app ── -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Monetrax" />
+
+  <!-- ── iOS: Apple touch icons (must be linked explicitly — iOS ignores manifest icons) ── -->
+  <link rel="apple-touch-icon"                        href="icons/apple-touch-180.png" />
+  <link rel="apple-touch-icon" sizes="180x180"        href="icons/apple-touch-180.png" />
+  <link rel="apple-touch-icon" sizes="167x167"        href="icons/apple-touch-167.png" />
+  <link rel="apple-touch-icon" sizes="152x152"        href="icons/apple-touch-152.png" />
+  <link rel="apple-touch-icon" sizes="120x120"        href="icons/apple-touch-120.png" />
+  <link rel="apple-touch-icon" sizes="76x76"          href="icons/apple-touch-76.png"  />
+
+  <!-- ── iOS: Splash screens (must be linked — Safari shows these on launch) ── -->
+  <!-- iPhone 14 Pro Max -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1284x2778.png" />
+  <!-- iPhone 14 / 13 / 12 -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1170x2532.png" />
+  <!-- iPhone X / 11 Pro / XS -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1125x2436.png" />
+  <!-- iPhone 8 / SE 2nd gen -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-750x1334.png" />
+  <!-- iPhone SE 1st gen -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-640x1136.png" />
+  <!-- iPad Pro 12.9" -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-2048x2732.png" />
+  <!-- iPad Pro 11" -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-1668x2388.png" />
+  <!-- iPad Air / Mini -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-1536x2048.png" />
+
+  <!-- ── FAVICON (browser tab) ── -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="32x32"   href="icons/icon-48.png"  />
+  <link rel="shortcut icon"                          href="icons/icon-192.png" />
+
+  <!-- ── SEO / Share ── -->
+  <meta name="description" content="Monetrax – Personal finance tracker. Track income, expenses, shopping and more. Free, offline, private." />
+  <meta property="og:title"       content="Monetrax – Track Smarter. Live Better." />
+  <meta property="og:description" content="Free personal finance tracker. Works offline, installs on your phone, keeps data private." />
+  <meta property="og:image"       content="icons/icon-512.png" />
+  <meta property="og:type"        content="website" />
+
+  <title>Monetrax</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 <div class="shell" id="shell">
 
   <!-- ══ SIDEBAR ══ -->
-  <nav class="sb" id="sb">
+  <nav class="sb" id="sb" role="navigation" aria-label="Main navigation">
     <div class="sb-logo">
-      <img src="icons/icon-192.png" alt="Monetrax" class="logo-img" />
+      <img src="icons/apple-touch-180.png" alt="Monetrax" class="logo-img" />
       <div class="logo-txt">
         <div class="logo-name">Monetrax</div>
         <div class="logo-sub">Track Smarter. Live Better.</div>
@@ -29,7 +74,7 @@
 
     <div class="sb-nav">
       <div class="nav-grp">Main</div>
-      <button class="ni act" data-page="dash" title="Dashboard">
+      <button class="ni act" data-page="dash"   title="Dashboard">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
         <span class="ni-lbl">Dashboard</span><span class="ni-tip">Dashboard</span>
       </button>
@@ -87,26 +132,31 @@
   <!-- ══ MAIN ══ -->
   <div class="main" style="position:relative">
 
-    <!-- Install banner (PWA prompt) -->
+    <!-- iOS "Add to Home Screen" nudge — shown only in Safari, not standalone -->
+    <div class="ios-nudge" id="ios-nudge">
+      <img src="icons/apple-touch-120.png" style="width:28px;height:28px;border-radius:7px" alt="" />
+      <span>To install: tap <strong>Share</strong> → <strong>Add to Home Screen</strong></span>
+      <button onclick="document.getElementById('ios-nudge').style.display='none'" aria-label="Dismiss">×</button>
+    </div>
+
+    <!-- Android install banner -->
     <div class="install-banner" id="install-banner">
-      <img src="icons/icon-48.png" style="width:22px;height:22px;border-radius:5px" alt="" />
+      <img src="icons/icon-48.png" style="width:24px;height:24px;border-radius:6px" alt="" />
       <span>Install Monetrax for offline access</span>
       <button id="install-btn">Install</button>
-      <button onclick="document.getElementById('install-banner').classList.remove('show')" style="border:none;background:none;color:#fff;cursor:pointer;font-size:16px;padding:0 4px">×</button>
+      <button onclick="document.getElementById('install-banner').style.display='none'" aria-label="Dismiss">×</button>
     </div>
 
     <div class="topbar">
       <div class="tb-l">
-        <button class="icon-btn" id="sb-toggle" title="Toggle sidebar">
+        <button class="icon-btn" id="sb-toggle" aria-label="Toggle navigation">
           <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="13" height="13" rx="2"/><path d="M5 1v13"/></svg>
         </button>
-        <div>
-          <div class="pg-title" id="pg-title">Dashboard</div>
-        </div>
+        <div class="pg-title" id="pg-title">Dashboard</div>
       </div>
       <div class="tb-r">
         <span class="bal-pill" id="top-bal">Balance: —</span>
-        <select class="cur-sel" id="cur-sel" title="Currency">
+        <select class="cur-sel" id="cur-sel" aria-label="Currency">
           <option value="€">€ EUR</option>
           <option value="$">$ USD</option>
           <option value="£">£ GBP</option>
@@ -116,13 +166,13 @@
           <option value="kr">kr SEK</option>
           <option value="zł">zł PLN</option>
         </select>
-        <button class="icon-btn" id="export-btn" title="Export CSV">
+        <button class="icon-btn" id="export-btn" aria-label="Export CSV">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v9M5 8l3 3 3-3M2 13h12"/></svg>
-          <span>Export</span>
+          <span class="btn-lbl">Export</span>
         </button>
         <button class="icon-btn" id="dark-btn">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" id="dark-ic"><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/><circle cx="8" cy="8" r="3"/></svg>
-          <span id="dark-lbl">Dark</span>
+          <span class="btn-lbl" id="dark-lbl">Dark</span>
         </button>
       </div>
     </div>
@@ -138,34 +188,19 @@
         </div>
         <div class="ig">
           <div class="ins" style="border-color:#1d9e75">
-            <div class="ins-lbl">Savings rate</div>
-            <div class="ins-val" id="i-sav">—</div>
-            <div class="ins-sub">of income</div>
+            <div class="ins-lbl">Savings rate</div><div class="ins-val" id="i-sav">—</div><div class="ins-sub">of income</div>
           </div>
           <div class="ins" style="border-color:#d85a30">
-            <div class="ins-lbl">Top category</div>
-            <div class="ins-val" style="font-size:13px;line-height:1.3;color:var(--t)" id="i-cat">—</div>
-            <div class="ins-sub" id="i-cat-a"></div>
+            <div class="ins-lbl">Top category</div><div class="ins-val" style="font-size:13px;line-height:1.3;color:var(--t)" id="i-cat">—</div><div class="ins-sub" id="i-cat-a"></div>
           </div>
           <div class="ins" style="border-color:#7f77dd">
-            <div class="ins-lbl">Avg daily spend</div>
-            <div class="ins-val" id="i-daily">—</div>
-            <div class="ins-sub" id="i-daily-s">this month</div>
+            <div class="ins-lbl">Avg daily spend</div><div class="ins-val" id="i-daily">—</div><div class="ins-sub" id="i-daily-s">this month</div>
           </div>
         </div>
         <div class="card">
-          <div class="card-h">
-            6-month trend
-            <div class="ct-wrap">
-              <button class="ct act" id="ct-bar">Bar</button>
-              <button class="ct" id="ct-line">Line</button>
-            </div>
-          </div>
+          <div class="card-h">6-month trend <div class="ct-wrap"><button class="ct act" id="ct-bar">Bar</button><button class="ct" id="ct-line">Line</button></div></div>
           <div class="cw sm"><canvas id="trendChart"></canvas></div>
-          <div class="lg">
-            <span class="ld"><span class="ldot" style="background:#9fe1cb"></span>Income</span>
-            <span class="ld"><span class="ldot" style="background:#f5c4b3"></span>Expenses</span>
-          </div>
+          <div class="lg"><span class="ld"><span class="ldot" style="background:#9fe1cb"></span>Income</span><span class="ld"><span class="ldot" style="background:#f5c4b3"></span>Expenses</span></div>
         </div>
         <div class="card"><div class="card-h">Recent transactions</div><div id="recent"></div></div>
       </section>
@@ -177,18 +212,11 @@
           <button class="at" data-tab="exp">Expense</button>
           <button class="at" data-tab="trf">Transfer</button>
         </div>
-        <!-- Income -->
         <div id="ap-inc" class="ap act">
           <div class="card">
             <div class="fg fg2">
-              <div class="fld"><label>Amount</label><input type="number" id="i-amt" placeholder="0.00" min="0" step="0.01" /></div>
-              <div class="fld"><label>Source</label>
-                <div class="cw-inp">
-                  <input type="text" id="i-src" placeholder="e.g. Salary" autocomplete="off" />
-                  <span class="cw-arr">▾</span>
-                  <div class="sugg" id="i-src-s"></div>
-                </div>
-              </div>
+              <div class="fld"><label>Amount</label><input type="number" id="i-amt" placeholder="0.00" min="0" step="0.01" inputmode="decimal" /></div>
+              <div class="fld"><label>Source</label><div class="cw-inp"><input type="text" id="i-src" placeholder="e.g. Salary" autocomplete="off" /><span class="cw-arr">▾</span><div class="sugg" id="i-src-s"></div></div></div>
             </div>
             <div class="fg fg3">
               <div class="fld"><label>Date</label><input type="date" id="i-date" /></div>
@@ -197,58 +225,32 @@
             </div>
           </div>
         </div>
-        <!-- Expense -->
         <div id="ap-exp" class="ap">
           <div class="card">
             <div class="fg fg3">
-              <div class="fld"><label>Amount</label><input type="number" id="e-amt" placeholder="0.00" min="0" step="0.01" /></div>
-              <div class="fld"><label>Description</label>
-                <div class="cw-inp">
-                  <input type="text" id="e-dsc" placeholder="e.g. Aldi" autocomplete="off" />
-                  <span class="cw-arr">▾</span>
-                  <div class="sugg" id="e-dsc-s"></div>
-                </div>
-              </div>
+              <div class="fld"><label>Amount</label><input type="number" id="e-amt" placeholder="0.00" min="0" step="0.01" inputmode="decimal" /></div>
+              <div class="fld"><label>Description</label><div class="cw-inp"><input type="text" id="e-dsc" placeholder="e.g. Aldi" autocomplete="off" /><span class="cw-arr">▾</span><div class="sugg" id="e-dsc-s"></div></div></div>
               <div class="fld"><label>Category</label>
-                <select id="e-cat">
-                  <option>🏠 Housing</option><option>🍔 Food</option><option>🚗 Transport</option>
-                  <option>💊 Health</option><option>🎮 Entertainment</option><option>👗 Clothing</option>
-                  <option>📚 Education</option><option>💡 Utilities</option><option>✈️ Travel</option>
-                  <option>🛒 Shopping</option><option>📦 Other</option>
-                </select>
+                <select id="e-cat"><option>🏠 Housing</option><option>🍔 Food</option><option>🚗 Transport</option><option>💊 Health</option><option>🎮 Entertainment</option><option>👗 Clothing</option><option>📚 Education</option><option>💡 Utilities</option><option>✈️ Travel</option><option>🛒 Shopping</option><option>📦 Other</option></select>
               </div>
             </div>
             <div class="fg fg3">
               <div class="fld"><label>Date</label><input type="date" id="e-date" /></div>
               <div class="fld"><label>Account</label><select id="e-acc"></select></div>
-              <div class="fld"><label>Budget type</label>
-                <select id="e-btype">
-                  <option value="needs">Needs (50%)</option>
-                  <option value="wants">Wants (30%)</option>
-                  <option value="savings">Savings (20%)</option>
-                </select>
-              </div>
+              <div class="fld"><label>Budget type</label><select id="e-btype"><option value="needs">Needs (50%)</option><option value="wants">Wants (30%)</option><option value="savings">Savings (20%)</option></select></div>
             </div>
             <button class="btn pri" id="add-exp-btn">Add expense</button>
           </div>
         </div>
-        <!-- Transfer -->
         <div id="ap-trf" class="ap">
           <div class="card" style="border-color:#b5d4f4">
-            <p style="font-size:11px;color:var(--t3);margin-bottom:9px">
-              <span style="color:var(--inc);font-weight:500">Received / Added</span> → balance ↑ &nbsp;·&nbsp;
-              <span style="color:var(--exp);font-weight:500">Sent</span> → balance ↓
-            </p>
-            <div class="fg fg4">
-              <div class="fld"><label>Amount</label><input type="number" id="t-amt" placeholder="0.00" min="0" step="0.01" /></div>
+            <p style="font-size:11px;color:var(--t3);margin-bottom:9px"><span style="color:var(--inc);font-weight:500">Received / Added</span> → balance ↑ &nbsp;·&nbsp; <span style="color:var(--exp);font-weight:500">Sent</span> → balance ↓</p>
+            <div class="fg fg2">
+              <div class="fld"><label>Amount</label><input type="number" id="t-amt" placeholder="0.00" min="0" step="0.01" inputmode="decimal" /></div>
               <div class="fld"><label>Person / Account</label><input type="text" id="t-name" placeholder="e.g. John" /></div>
-              <div class="fld"><label>Type</label>
-                <select id="t-type">
-                  <option value="recv">↙ Received from friend</option>
-                  <option value="sent">↗ Sent to friend</option>
-                  <option value="adde">🏦 Added from account</option>
-                </select>
-              </div>
+            </div>
+            <div class="fg fg2">
+              <div class="fld"><label>Type</label><select id="t-type"><option value="recv">↙ Received from friend</option><option value="sent">↗ Sent to friend</option><option value="adde">🏦 Added from account</option></select></div>
               <div class="fld"><label>Date</label><input type="date" id="t-date" /></div>
             </div>
             <div class="fg fg2" style="margin-bottom:8px">
@@ -265,13 +267,10 @@
         <div class="hist-bar">
           <div class="search-row">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M11 11l3 3"/></svg>
-            <input type="text" id="h-search" placeholder="Search by name, category, amount…" />
+            <input type="search" id="h-search" placeholder="Search transactions…" />
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button class="btn sm" id="hist-export-btn">
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v9M5 8l3 3 3-3M2 13h12"/></svg>
-              Export
-            </button>
+            <button class="btn sm" id="hist-export-btn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v9M5 8l3 3 3-3M2 13h12"/></svg>Export</button>
             <button class="btn sm del" id="clear-month-btn">Clear month</button>
           </div>
         </div>
@@ -284,19 +283,13 @@
         <div class="card">
           <div class="card-h">Add item</div>
           <div style="display:flex;gap:8px;margin-bottom:9px;align-items:flex-end;flex-wrap:wrap">
-            <div class="fld" style="flex:1;min-width:120px"><label>Product</label>
-              <div class="cw-inp">
-                <input type="text" id="sh-n" placeholder="e.g. Milk" autocomplete="off" />
-                <span class="cw-arr">▾</span>
-                <div class="sugg" id="sh-n-s"></div>
-              </div>
-            </div>
-            <div class="fld" style="flex:0 0 100px"><label>Price/unit</label><input type="number" id="sh-p" placeholder="0.00" min="0" step="0.01" /></div>
-            <div class="fld" style="flex:0 0 64px"><label>Qty</label><input type="number" id="sh-q" value="1" min="1" /></div>
+            <div class="fld" style="flex:1;min-width:120px"><label>Product</label><div class="cw-inp"><input type="text" id="sh-n" placeholder="e.g. Milk" autocomplete="off" /><span class="cw-arr">▾</span><div class="sugg" id="sh-n-s"></div></div></div>
+            <div class="fld" style="flex:0 0 100px"><label>Price/unit</label><input type="number" id="sh-p" placeholder="0.00" min="0" step="0.01" inputmode="decimal" /></div>
+            <div class="fld" style="flex:0 0 64px"><label>Qty</label><input type="number" id="sh-q" value="1" min="1" inputmode="numeric" /></div>
             <div style="padding-bottom:1px"><button class="btn pri" id="cart-add-btn">Add</button></div>
           </div>
           <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
-            <div class="fld" style="flex:0 0 155px"><label>Budget cap (optional)</label><input type="number" id="sh-cap" placeholder="e.g. 60" min="0" step="0.01" /></div>
+            <div class="fld" style="flex:0 0 155px"><label>Budget cap (optional)</label><input type="number" id="sh-cap" placeholder="e.g. 60" min="0" step="0.01" inputmode="decimal" /></div>
             <div style="padding-bottom:1px"><button class="btn sm del" id="cart-clear-btn">Clear cart</button></div>
           </div>
         </div>
@@ -321,14 +314,12 @@
           <div class="card-h">Add recurring transaction</div>
           <div class="fg fg3">
             <div class="fld"><label>Name</label><input type="text" id="rc-n" placeholder="e.g. Rent, Netflix" /></div>
-            <div class="fld"><label>Amount</label><input type="number" id="rc-amt" placeholder="0.00" min="0" step="0.01" /></div>
+            <div class="fld"><label>Amount</label><input type="number" id="rc-amt" placeholder="0.00" min="0" step="0.01" inputmode="decimal" /></div>
             <div class="fld"><label>Type</label><select id="rc-type"><option value="expense">Expense</option><option value="income">Income</option></select></div>
           </div>
           <div class="fg fg3">
-            <div class="fld"><label>Category</label>
-              <select id="rc-cat"><option>🏠 Housing</option><option>🍔 Food</option><option>💡 Utilities</option><option>🎮 Entertainment</option><option>💊 Health</option><option>📚 Education</option><option>💰 Income</option><option>📦 Other</option></select>
-            </div>
-            <div class="fld"><label>Day of month</label><input type="number" id="rc-day" placeholder="1–28" min="1" max="28" value="1" /></div>
+            <div class="fld"><label>Category</label><select id="rc-cat"><option>🏠 Housing</option><option>🍔 Food</option><option>💡 Utilities</option><option>🎮 Entertainment</option><option>💊 Health</option><option>📚 Education</option><option>💰 Income</option><option>📦 Other</option></select></div>
+            <div class="fld"><label>Day of month</label><input type="number" id="rc-day" placeholder="1–28" min="1" max="28" value="1" inputmode="numeric" /></div>
             <div class="fld" style="display:flex;align-items:flex-end"><button class="btn pri" id="recur-add-btn" style="width:100%">Add recurring</button></div>
           </div>
         </div>
@@ -340,7 +331,7 @@
       <section id="s-budget" class="screen">
         <div class="card">
           <div class="card-h">50 / 30 / 20 rule</div>
-          <div class="fld" style="margin-bottom:10px"><label>Income target — leave blank to use logged income</label><input type="number" id="b-inc" placeholder="Monthly income" /></div>
+          <div class="fld" style="margin-bottom:10px"><label>Income target — leave blank to use logged income</label><input type="number" id="b-inc" placeholder="Monthly income" inputmode="decimal" /></div>
           <div id="b-bars"></div>
           <div class="rc" id="b-rule"></div>
         </div>
@@ -358,13 +349,7 @@
           <div class="card-h">Add to list</div>
           <div id="dup-warn" class="warn" style="display:none;background:var(--wo);color:var(--wot)"></div>
           <div class="fg fg3" style="margin-bottom:8px">
-            <div class="fld"><label>Item</label>
-              <div class="cw-inp">
-                <input type="text" id="sl-n" placeholder="e.g. Eggs, Coffee" autocomplete="off" />
-                <span class="cw-arr">▾</span>
-                <div class="sugg" id="sl-n-s"></div>
-              </div>
-            </div>
+            <div class="fld"><label>Item</label><div class="cw-inp"><input type="text" id="sl-n" placeholder="e.g. Eggs" autocomplete="off" /><span class="cw-arr">▾</span><div class="sugg" id="sl-n-s"></div></div></div>
             <div class="fld"><label>Qty / note</label><input type="text" id="sl-q" placeholder="e.g. 2 packs" /></div>
             <div class="fld" style="display:flex;align-items:flex-end"><button class="btn pri" id="sl-add-btn" style="width:100%">Add</button></div>
           </div>
@@ -382,14 +367,7 @@
           <div class="card-h">Add account</div>
           <div class="fg fg3">
             <div class="fld"><label>Name</label><input type="text" id="ac-n" placeholder="e.g. Main bank" /></div>
-            <div class="fld"><label>Type</label>
-              <select id="ac-type">
-                <option value="bank">🏦 Bank</option>
-                <option value="cash">💵 Cash</option>
-                <option value="savings">💰 Savings</option>
-                <option value="card">💳 Card</option>
-              </select>
-            </div>
+            <div class="fld"><label>Type</label><select id="ac-type"><option value="bank">🏦 Bank</option><option value="cash">💵 Cash</option><option value="savings">💰 Savings</option><option value="card">💳 Card</option></select></div>
             <div class="fld" style="display:flex;align-items:flex-end"><button class="btn pri" id="acc-add-btn" style="width:100%">Add account</button></div>
           </div>
         </div>
@@ -399,17 +377,14 @@
       <!-- AI INSIGHTS -->
       <section id="s-ai" class="screen">
         <div class="ai-card">
-          <div class="ai-title">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2z"/><path d="M8 6v3M8 11v.5"/></svg>
-            AI Insights — Powered by your data
-          </div>
+          <div class="ai-title"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2z"/><path d="M8 6v3M8 11v.5"/></svg>AI Insights — Powered by your data</div>
           <div id="ai-body"><div class="ai-spin">Analysing your transactions…</div></div>
         </div>
         <div class="card"><div class="card-h">3-month comparison</div><div class="cw sm"><canvas id="cmpChart"></canvas></div></div>
       </section>
 
     </div><!-- content -->
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div><!-- main -->
 </div><!-- shell -->
 

@@ -503,3 +503,107 @@ select {
   .acc-grid { grid-template-columns: 1fr; }
   .rc  { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ═══════════════════════════════════════════
+   iOS & ANDROID COMPATIBILITY ADDITIONS
+═══════════════════════════════════════════ */
+
+/* Safe area insets — notch / Dynamic Island / home indicator */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+.shell {
+  height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}
+
+/* Prevent iOS text size adjustment on rotation */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+/* Prevent rubber-band overscroll on iOS leaking through shell */
+body { overscroll-behavior: none; }
+.content { -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
+
+/* iOS: remove default input styling */
+input, select, textarea, button {
+  -webkit-appearance: none;
+  border-radius: 8px;
+}
+input[type="date"] { -webkit-appearance: none; }
+
+/* iOS tap states — remove grey flash */
+a, button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+
+/* iOS: nudge banner — shown only in Safari, not when running as standalone PWA */
+.ios-nudge {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  background: #0d1126;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+.ios-nudge button {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.7);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Android install banner */
+.install-banner {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  background: linear-gradient(90deg, #185fa5, #1d9e75);
+  color: #fff;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.install-banner button:first-of-type {
+  margin-left: auto;
+  padding: 4px 12px;
+  border: 1.5px solid #fff;
+  background: none;
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 500;
+  border-radius: 6px;
+}
+.install-banner button:last-of-type {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.7);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+/* Hide label text on very small screens */
+@media (max-width: 380px) {
+  .btn-lbl { display: none; }
+  .bal-pill { display: none; }
+}
+
+/* Larger tap targets on mobile */
+@media (max-width: 640px) {
+  .ni  { min-height: 44px; }
+  .btn { min-height: 44px; }
+  input, select { min-height: 44px; font-size: 16px; } /* font-size:16px prevents iOS zoom on focus */
+  .qb  { width: 36px; height: 36px; font-size: 18px; }
+  .sl-cb { width: 24px; height: 24px; }
+  .tx-d  { padding: 8px; }
+}
