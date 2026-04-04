@@ -1,126 +1,95 @@
-# Monetrax — Track Smarter. Live Better.
+<div align="center">
+  <img src="icons/icon-192.png" width="100" height="100" alt="Monetrax Logo" />
 
-Personal finance tracker PWA with smart insights, shopping cart, recurring transactions and multi-account support.
+  <h1>Monetrax</h1>
+  <p><strong>Track Smarter. Live Better.</strong></p>
 
----
+  <p>A free, private, installable finance tracker that runs entirely in your browser — no account, no server, no subscription.</p>
 
-## 📁 File structure
+  <br />
 
-```
-monetrax/
-├── index.html          ← App shell & all HTML screens
-├── style.css           ← All styles & theme tokens
-├── app.js              ← All application logic
-├── sw.js               ← Service worker (offline support)
-├── manifest.json       ← PWA manifest
-└── icons/
-    ├── icon-48.png
-    ├── icon-72.png
-    ├── icon-96.png
-    ├── icon-144.png
-    ├── icon-192.png
-    ├── icon-512.png
-    └── icon-maskable.png
-```
+  <img src="https://img.shields.io/badge/PWA-Installable-185fa5?style=flat-square&logo=googlechrome&logoColor=white" alt="PWA" />
+  <img src="https://img.shields.io/badge/Offline-Ready-1d9e75?style=flat-square" alt="Offline" />
+  <img src="https://img.shields.io/badge/Data-On%20Device-7f77dd?style=flat-square" alt="Private" />
+  <img src="https://img.shields.io/badge/Cost-Free-d85a30?style=flat-square" alt="Free" />
+</div>
 
 ---
 
-## 🚀 Hosting on GitHub Pages (recommended)
+## What is Monetrax?
 
-**Why PWA over a GitHub-only site?**
-- Installable directly from the browser — works like a native app on Android & iOS
-- Fully offline — service worker caches everything, no internet needed after first load
-- No app store, no review process, no fees
-- One URL to share — anyone can open it and optionally install it
-- Your data stays on-device (localStorage) — no server, no cost, no privacy risk
+Monetrax is a personal finance tracker you install straight from your browser — no app store, no sign-up, no fees. It works offline, keeps all your data on your own device, and looks and feels like a native app on both Android and iOS.
 
-### Step-by-step
-
-1. **Create a GitHub account** at github.com if you don't have one.
-
-2. **Create a new repository** named `monetrax` (or any name).
-
-3. **Upload all files** — drag and drop the entire `monetrax/` folder contents into the repo, or use Git:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial Monetrax release"
-   git remote add origin https://github.com/YOUR_USERNAME/monetrax.git
-   git push -u origin main
-   ```
-
-4. **Enable GitHub Pages**:
-   - Go to your repo → Settings → Pages
-   - Source: Deploy from a branch → `main` → `/ (root)`
-   - Click Save
-
-5. **Your app is live** at:
-   ```
-   https://YOUR_USERNAME.github.io/monetrax/
-   ```
-
-6. **Install on phone**:
-   - Open the URL in Chrome (Android) or Safari (iOS)
-   - Android: tap the "Install Monetrax" banner or browser menu → "Add to home screen"
-   - iOS: tap Share → "Add to Home Screen"
-
-### Custom domain (optional)
-- Buy a domain (e.g. monetrax.app) from Namecheap/Cloudflare
-- In repo Settings → Pages → Custom domain, add your domain
-- Add a CNAME DNS record pointing to `YOUR_USERNAME.github.io`
+Built for people who want a clear, honest picture of where their money goes — without handing their financial life to a third-party service.
 
 ---
 
-## 🔧 Local development
+## Features
 
-No build tools needed. Just open `index.html` in a browser, or serve locally:
+### 💰 Track every transaction
+Log income, expenses and transfers in seconds. Smart autocomplete remembers your stores, sources and products so you never type the same thing twice.
 
-```bash
-# Python
-python3 -m http.server 8080
+### 🛒 Shopping cart calculator
+Add items before you reach the checkout counter. Set a budget cap and Monetrax tells you when you're getting close or going over — before you tap your card.
 
-# Node
-npx serve .
-```
+### 📋 Shopping list
+A simple checklist that lives alongside your tracker. Add items, tick them off as you shop, leave the rest for next time. Warns you if you try to add something twice.
 
-Then open `http://localhost:8080`
+### 🔁 Recurring transactions
+Set up rent, subscriptions, salary or any regular payment once. Monetrax tracks what's due this month and lets you apply it in one tap.
 
-> Note: The service worker only activates over HTTPS or localhost.
+### 📊 Dashboard insights
+Every month at a glance: income vs expenses, savings rate, biggest spending category, and average daily spend — colour-coded so you know immediately if you're on track.
+
+### 🤖 AI Insights
+Compares this month to last. Flags if your food spending jumped, if your savings rate dropped, or if you're spending more than you earn — in plain language, not jargon.
+
+### 🏦 Multi-account support
+Separate balances for your bank account, cash wallet, savings pot and card. Each transaction is tied to an account so your numbers always add up.
+
+### 📁 Export anytime
+Download all your transactions as a CSV file — open in Excel, Google Sheets or any spreadsheet app.
 
 ---
 
-## ✨ Features
+## Privacy
 
-| Feature | Description |
+Monetrax stores **everything on your device** using your browser's local storage. No data is sent to any server. No account is required. If you uninstall the app or clear your browser data, your records go with it — so export regularly if you want a backup.
+
+---
+
+## Supported currencies
+
+€ EUR &nbsp;·&nbsp; $ USD &nbsp;·&nbsp; £ GBP &nbsp;·&nbsp; ₹ INR &nbsp;·&nbsp; ¥ JPY &nbsp;·&nbsp; Fr CHF &nbsp;·&nbsp; kr SEK &nbsp;·&nbsp; zł PLN
+
+---
+
+## Install
+
+| Platform | How |
 |---|---|
-| Dashboard | Income/expense metrics, savings rate, top category, avg daily spend |
-| Add transaction | Tabbed: Income / Expense / Transfer with smart autocomplete |
-| History | Search, filter by month, CSV export, delete individual or all |
-| Shopping cart | Pre-bill items, budget cap, qty controls, checkout to expenses |
-| Recurring | Rent/salary/subscriptions, due-this-month tracker, one-click apply |
-| Budget | 50/30/20 rule with visual progress bars |
-| Categories | Doughnut chart + breakdown |
-| Shopping list | Tick off items, duplicate detection, sections |
-| Accounts | Bank/Cash/Savings/Card with per-account balance |
-| AI Insights | Month-over-month comparisons, savings alerts, spending patterns |
-| Dark mode | Full dark theme, persisted |
-| Currency | EUR, USD, GBP, INR, JPY, CHF, SEK, PLN |
-| Bar/Line chart | Toggle trend chart type |
-| Offline | Service worker caches all assets |
-| PWA | Installable on Android & iOS home screen |
+| Android (Chrome) | Open the link → tap **Install Monetrax** in the banner |
+| iPhone / iPad (Safari) | Open the link → tap Share → **Add to Home Screen** |
+| Desktop (Chrome / Edge) | Open the link → click the install icon in the address bar |
+
+Once installed it appears on your home screen like any other app and works completely offline.
 
 ---
 
-## 📱 Browser support
+## Browser support
 
-| Browser | Install | Offline |
+| Browser | Installable | Works offline |
 |---|---|---|
-| Chrome (Android) | ✅ Banner | ✅ |
-| Safari (iOS 16.4+) | ✅ Add to Home | ✅ |
-| Chrome (Desktop) | ✅ Address bar | ✅ |
-| Firefox | ❌ No install | ✅ |
+| Chrome (Android) | ✅ | ✅ |
+| Safari (iOS 16.4+) | ✅ | ✅ |
+| Chrome (Desktop) | ✅ | ✅ |
 | Edge | ✅ | ✅ |
+| Firefox | — | ✅ |
 
 ---
 
-*Monetrax — Track Smarter. Live Better.*
+<div align="center">
+  <sub>Made with care · No trackers · No ads · No nonsense</sub>
+  <br />
+  <sub><em>Monetrax — Track Smarter. Live Better.</em></sub>
+</div>
