@@ -20,6 +20,22 @@ const PAGES = {
   cats:'Categories', slist:'Shopping list', accs:'Accounts', ai:'AI Insights'
 };
 
+/* ── EXCHANGE RATES (relative to EUR) ── */
+const RATES_TO_EUR = {
+  '€': 1, '$': 0.92, '£': 1.17, '₹': 0.011,
+  '¥': 0.0062, 'Fr': 1.04, 'kr': 0.087, 'zł': 0.23
+};
+
+function toDisplay(amount, fromCur) {
+  const from = fromCur || S.cur;
+  if (from === S.cur) return amount;
+  return (amount * (RATES_TO_EUR[from] || 1)) / (RATES_TO_EUR[S.cur] || 1);
+}
+
+function fmtCur(amount, cur) {
+  return (cur || S.cur) + Math.abs(amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 /* ── STATE ── */
 const S = {
   txs: [], cart: [], sl: [], recur: [], accs: [],
@@ -70,7 +86,23 @@ function saveAll() {
 const $ = id => document.getElementById(id);
 function val(id)     { return $(id).value; }
 function setVal(id,v){ $(id).value = v; }
-function flt(id)     { return parseFloat(val(id)) || 0; }
+function parseAmount(id) {
+  const raw = val(id).trim().replace(',', '.');
+  const n = parseFloat(raw);
+  return isNaN(n) ? 0 : Math.round(n * 100) / 100;
+}
+
+function fixDecimalInput(el) {
+  if (!el) return;
+  el.addEventListener('input', () => {
+    const pos = el.selectionStart;
+    if (el.value.includes(',')) {
+      el.value = el.value.replace(',', '.');
+      try { el.setSelectionRange(pos, pos); } catch (_) {}
+    }
+  });
+}
+
 function int(id)     { return parseInt(val(id))   || 0; }
 
 /* ── DATE ── */
@@ -93,9 +125,10 @@ function prevMon() {
 /* ── TRANSACTION HELPERS ── */
 function isIn(t)  { return t.type === 'income'  || t.type === 'transfer_in';  }
 function isOut(t) { return t.type === 'expense' || t.type === 'transfer_out'; }
+function txAmt(t) { return toDisplay(t.amount, t.cur || S.cur); }
 function totals(list) {
-  const inc = list.filter(isIn).reduce((s, t) => s + t.amount, 0);
-  const exp = list.filter(isOut).reduce((s, t) => s + t.amount, 0);
+  const inc = list.filter(isIn).reduce((s, t)  => s + txAmt(t), 0);
+  const exp = list.filter(isOut).reduce((s, t) => s + txAmt(t), 0);
   return { inc, exp, bal: inc - exp };
 }
 
@@ -441,10 +474,12 @@ function renderCats() {
    ADD INCOME
 ══════════════════════════════════════════ */
 function addIncome() {
-  const amount = flt('i-amt'), source = val('i-src').trim(), date = val('i-date'), accId = val('i-acc');
+  const amount = parseAmount('i-amt'), source = val('i-src').trim(), date = val('i-date'), accId = val('i-acc');
   if (!amount || amount <= 0) { toast('Enter a valid amount.'); return; }
+  const acc = S.accs.find(a => a.id === accId);
+  const cur = acc?.cur || S.cur;
   addToList('incSrcs', source);
-  S.txs.push({ id: Date.now(), type: 'income', amount, desc: source || 'Income', date, cat: '💰 Income', btype: 'income', accId });
+  S.txs.push({ id: Date.now(), type: 'income', amount, desc: source || 'Income', date, cat: '💰 Income', btype: 'income', accId, cur });
   saveAll(); renderAll(); toast('Income added!');
   setVal('i-amt', ''); setVal('i-src', ''); setVal('i-date', today());
   navigate('hist');
@@ -454,11 +489,13 @@ function addIncome() {
    ADD EXPENSE
 ══════════════════════════════════════════ */
 function addExpense() {
-  const amount = flt('e-amt'), desc = val('e-dsc').trim(), date = val('e-date');
+  const amount = parseAmount('e-amt'), desc = val('e-dsc').trim(), date = val('e-date');
   const cat = val('e-cat'), btype = val('e-btype'), accId = val('e-acc');
   if (!amount || amount <= 0) { toast('Enter a valid amount.'); return; }
+  const acc = S.accs.find(a => a.id === accId);
+  const cur = acc?.cur || S.cur;
   if (desc) addToList('expDscs', desc);
-  S.txs.push({ id: Date.now(), type: 'expense', amount, desc: desc || cat, date, cat, btype, accId });
+  S.txs.push({ id: Date.now(), type: 'expense', amount, desc: desc || cat, date, cat, btype, accId, cur });
   saveAll(); renderAll(); toast('Expense added!');
   setVal('e-amt', ''); setVal('e-dsc', ''); setVal('e-date', today());
   navigate('hist');
@@ -468,7 +505,7 @@ function addExpense() {
    TRANSFER
 ══════════════════════════════════════════ */
 function updateTransferPreview() {
-  const amount = flt('t-amt'), name = val('t-name').trim() || '…', type = val('t-type'), el = $('tp');
+  const amount = parseAmount('t-amt'), name = val('t-name').trim() || '…', type = val('t-type'), el = $('tp');
   if (!amount) { el.style.display = 'none'; return; }
   const isI = type === 'recv' || type === 'adde';
   const msgs = {
@@ -483,15 +520,21 @@ function updateTransferPreview() {
 }
 
 function addTransfer() {
-  const amount = flt('t-amt'), name = val('t-name').trim(), type = val('t-type');
+  const amount = parseAmount('t-amt'), name = val('t-name').trim(), type = val('t-type');
   const date = val('t-date'), note = val('t-note').trim();
   if (!amount || amount <= 0) { toast('Enter a valid amount.'); return; }
   const isI  = type === 'recv' || type === 'adde';
   const icos = { recv: '↙️', sent: '↗️', adde: '🏦' };
   const lbls = { recv: 'From', sent: 'To', adde: 'From' };
+  let cur = S.cur, fromAccName = name;
+  if (type === 'adde') {
+    const fromAccId = val('t-acc-sel');
+    const fromAcc = S.accs.find(a => a.id === fromAccId);
+    if (fromAcc) { cur = fromAcc.cur || S.cur; fromAccName = fromAcc.name; }
+  }
   S.txs.push({
-    id: Date.now(), type: isI ? 'transfer_in' : 'transfer_out', amount,
-    desc: `${icos[type]} ${lbls[type]}: ${name || '—'}${note ? ' — ' + note : ''}`,
+    id: Date.now(), type: isI ? 'transfer_in' : 'transfer_out', amount, cur,
+    desc: `${icos[type]} ${lbls[type]}: ${fromAccName || '—'}${note ? ' — ' + note : ''}`,
     date, cat: icos[type] + ' Transfer', btype: 'transfer', ttype: type
   });
   saveAll(); renderAll(); toast('Transfer logged!');
@@ -588,11 +631,12 @@ function checkoutCart() {
    RECURRING TRANSACTIONS
 ══════════════════════════════════════════ */
 function addRecurring() {
-  const name  = val('rc-n').trim(), amount = flt('rc-amt');
+  const name  = val('rc-n').trim(), amount = parseAmount('rc-amt');
   const type  = val('rc-type'), cat = val('rc-cat'), day = Math.min(28, int('rc-day') || 1);
-  if (!name)            { toast('Enter a name.');         return; }
+  const startDate = val('rc-start') || today();
+  if (!name)              { toast('Enter a name.'); return; }
   if (!amount || amount <= 0) { toast('Enter a valid amount.'); return; }
-  S.recur.push({ id: Date.now(), name, amount, type, cat, day });
+  S.recur.push({ id: Date.now(), name, amount, type, cat, day, startDate, cur: S.cur });
   saveAll(); renderRecur(); toast('Recurring added!');
   setVal('rc-n', ''); setVal('rc-amt', '');
 }
@@ -607,7 +651,8 @@ function applyRecurring(r) {
   const dayStr = String(Math.min(r.day, new Date(parseInt(m.split('-')[0]), parseInt(m.split('-')[1]), 0).getDate())).padStart(2, '0');
   const date   = m + '-' + dayStr;
   if (S.txs.find(t => t.recurId === r.id && t.date === date)) { toast('Already applied this month.'); return; }
-  S.txs.push({ id: Date.now(), recurId: r.id, type: r.type, amount: r.amount, desc: r.name + ' (recurring)', date, cat: r.cat, btype: 'needs' });
+  if (r.startDate && date < r.startDate) { toast(`${r.name} starts on ${r.startDate}.`); return; }
+  S.txs.push({ id: Date.now(), recurId: r.id, type: r.type, amount: r.amount, desc: r.name + ' (recurring)', date, cat: r.cat, btype: 'needs', cur: r.cur || S.cur });
   saveAll(); renderAll(); renderRecur(); toast(`${r.name} applied!`);
 }
 
@@ -721,12 +766,21 @@ function populateAccDropdowns() {
 }
 
 function addAccount() {
-  const name = val('ac-n').trim(), type = val('ac-type');
+  const name    = val('ac-n').trim();
+  const type    = val('ac-type');
+  const opening = parseAmount('ac-bal');
+  const cur     = val('ac-cur') || S.cur;
   if (!name) { toast('Enter an account name.'); return; }
   if (S.accs.find(a => a.name.toLowerCase() === name.toLowerCase())) { toast('Account already exists.'); return; }
-  S.accs.push({ id: 'acc_' + Date.now(), name, type });
-  saveAll(); renderAccs(); populateAccDropdowns(); toast('Account added!');
-  setVal('ac-n', '');
+  const id = 'acc_' + Date.now();
+  S.accs.push({ id, name, type, opening, cur });
+  if (opening > 0) {
+    S.txs.push({ id: Date.now() + 1, type: 'income', amount: opening,
+      desc: `Opening balance — ${name}`, date: today(),
+      cat: '💰 Income', btype: 'income', accId: id, cur });
+  }
+  saveAll(); renderAccs(); populateAccDropdowns(); renderAll(); toast('Account added!');
+  setVal('ac-n', ''); setVal('ac-bal', '');
 }
 
 function deleteAccount(id) {
@@ -736,8 +790,10 @@ function deleteAccount(id) {
 }
 
 function accBalance(a) {
-  const txs = S.txs.filter(t => t.accId === a.id);
-  return txs.filter(isIn).reduce((s, t) => s + t.amount, 0) - txs.filter(isOut).reduce((s, t) => s + t.amount, 0);
+  const txs    = S.txs.filter(t => t.accId === a.id);
+  const native = txs.filter(isIn).reduce((s, t) => s + t.amount, 0)
+               - txs.filter(isOut).reduce((s, t) => s + t.amount, 0);
+  return toDisplay(native, a.cur || S.cur);
 }
 
 function renderAccs() {
@@ -924,6 +980,21 @@ window.addEventListener('appinstalled', () => {
   }
 })();
 
+function updateTransferAccDropdown() {
+  const type = val('t-type');
+  const wrap = $('t-acc-wrap');
+  if (!wrap) return;
+  if (type === 'adde') {
+    wrap.style.display = 'block';
+    const sel = $('t-acc-sel');
+    if (sel) sel.innerHTML = S.accs.length
+      ? S.accs.map(a => `<option value="${a.id}">${a.name}${a.cur ? ' (' + a.cur + ')' : ''}</option>`).join('')
+      : '<option value="">No accounts yet</option>';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
 /* ══════════════════════════════════════════
    EVENT WIRING
 ══════════════════════════════════════════ */
@@ -975,21 +1046,25 @@ function wireEvents() {
 
   // Income form
   $('add-inc-btn').addEventListener('click', addIncome);
+  fixDecimalInput($('i-amt'));
   $('i-date').value = today();
 
   // Expense form
   $('add-exp-btn').addEventListener('click', addExpense);
+  fixDecimalInput($('e-amt'));
   $('e-date').value = today();
 
   // Transfer form
   $('add-trf-btn').addEventListener('click', addTransfer);
   $('t-amt').addEventListener('input', updateTransferPreview);
   $('t-name').addEventListener('input', updateTransferPreview);
-  $('t-type').addEventListener('change', updateTransferPreview);
+  $('t-type').addEventListener('change', () => { updateTransferPreview(); updateTransferAccDropdown(); });
   $('t-date').value = today();
 
   // Shopping cart
   $('cart-add-btn').addEventListener('click', addCartItem);
+  fixDecimalInput($('sh-p'));
+  fixDecimalInput($('sh-cap'));
   $('sh-n').addEventListener('keydown', e => { if (e.key === 'Enter') addCartItem(); });
   $('sh-p').addEventListener('keydown', e => { if (e.key === 'Enter') addCartItem(); });
   $('sh-cap').addEventListener('input', renderCart);
@@ -999,6 +1074,7 @@ function wireEvents() {
 
   // Recurring
   $('recur-add-btn').addEventListener('click', addRecurring);
+  fixDecimalInput($('rc-amt'));
 
   // Budget
   $('b-inc').addEventListener('input', renderBudget);
@@ -1013,6 +1089,7 @@ function wireEvents() {
 
   // Accounts
   $('acc-add-btn').addEventListener('click', addAccount);
+  fixDecimalInput($('ac-bal'));
 
   // Autocomplete bindings
   bindCombo('i-src', 'incSrcs');
@@ -1026,6 +1103,8 @@ function wireEvents() {
       S.sbOpen = false; saveAll(); applySidebar();
     }
   });
+  fixDecimalInput($('t-amt'));
+  fixDecimalInput($('b-inc'));
 }
 
 /* ══════════════════════════════════════════
@@ -1041,6 +1120,7 @@ function wireEvents() {
   $('ct-line').classList.toggle('act', S.chartType === 'line');
   populateAccDropdowns();
   wireEvents();
+  updateTransferAccDropdown();
   renderAll();
   renderCart();
   renderSl();

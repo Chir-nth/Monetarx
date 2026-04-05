@@ -216,7 +216,7 @@
         <div id="ap-inc" class="ap act">
           <div class="card">
             <div class="fg fg2">
-              <div class="fld"><label>Amount</label><input type="number" id="i-amt" placeholder="0.00" min="0" step="0.01" inputmode="decimal" /></div>
+              <div class="fld"><label>Amount</label><input type="text" inputmode="decimal" id="i-amt" placeholder="0,00" min="0" step="0.01" inputmode="decimal" /></div>
               <div class="fld"><label>Source</label><div class="cw-inp"><input type="text" id="i-src" placeholder="e.g. Salary" autocomplete="off" /><span class="cw-arr">▾</span><div class="sugg" id="i-src-s"></div></div></div>
             </div>
             <div class="fg fg3">
@@ -229,7 +229,7 @@
         <div id="ap-exp" class="ap">
           <div class="card">
             <div class="fg fg3">
-              <div class="fld"><label>Amount</label><input type="number" id="e-amt" placeholder="0.00" min="0" step="0.01" inputmode="decimal" /></div>
+              <div class="fld"><label>Amount</label><input type="text" inputmode="decimal" id="e-amt" placeholder="0,00" min="0" step="0.01" inputmode="decimal" /></div>
               <div class="fld"><label>Description</label><div class="cw-inp"><input type="text" id="e-dsc" placeholder="e.g. Aldi" autocomplete="off" /><span class="cw-arr">▾</span><div class="sugg" id="e-dsc-s"></div></div></div>
               <div class="fld"><label>Category</label>
                 <select id="e-cat"><option>🏠 Housing</option><option>🍔 Food</option><option>🚗 Transport</option><option>💊 Health</option><option>🎮 Entertainment</option><option>👗 Clothing</option><option>📚 Education</option><option>💡 Utilities</option><option>✈️ Travel</option><option>🛒 Shopping</option><option>📦 Other</option></select>
@@ -247,16 +247,20 @@
           <div class="card" style="border-color:#b5d4f4">
             <p style="font-size:11px;color:var(--t3);margin-bottom:9px"><span style="color:var(--inc);font-weight:500">Received / Added</span> → balance ↑ &nbsp;·&nbsp; <span style="color:var(--exp);font-weight:500">Sent</span> → balance ↓</p>
             <div class="fg fg2">
-              <div class="fld"><label>Amount</label><input type="number" id="t-amt" placeholder="0.00" min="0" step="0.01" inputmode="decimal" /></div>
-              <div class="fld"><label>Person / Account</label><input type="text" id="t-name" placeholder="e.g. John" /></div>
+              <div class="fld"><label>Amount</label><input type="text" inputmode="decimal" id="t-amt" placeholder="0,00" min="0" step="0.01" inputmode="decimal" /></div>
+              <div class="fld"><label>Person / Name</label><input type="text" id="t-name" placeholder="e.g. John or bank name" /></div>
             </div>
             <div class="fg fg2">
-              <div class="fld"><label>Type</label><select id="t-type"><option value="recv">↙ Received from friend</option><option value="sent">↗ Sent to friend</option><option value="adde">🏦 Added from account</option></select></div>
+              <div class="fld"><label>Type</label><select id="t-type"><option value="recv">↙ Received from friend</option><option value="sent">↗ Sent to friend</option><option value="adde">🏦 Added from my bank account</option></select></div>
               <div class="fld"><label>Date</label><input type="date" id="t-date" /></div>
             </div>
             <div class="fg fg2" style="margin-bottom:8px">
               <div class="fld"><label>Note (optional)</label><input type="text" id="t-note" placeholder="e.g. Dinner split" /></div>
               <div class="fld" style="display:flex;align-items:flex-end"><button class="btn pri" id="add-trf-btn" style="width:100%">Add transfer</button></div>
+            </div>
+            <div id="t-acc-wrap" class="fld" style="display:none;margin-bottom:8px">
+              <label>Which account to transfer from?</label>
+              <select id="t-acc-sel"></select>
             </div>
             <div class="tp" id="tp"></div>
           </div>
@@ -285,12 +289,12 @@
           <div class="card-h">Add item</div>
           <div style="display:flex;gap:8px;margin-bottom:9px;align-items:flex-end;flex-wrap:wrap">
             <div class="fld" style="flex:1;min-width:120px"><label>Product</label><div class="cw-inp"><input type="text" id="sh-n" placeholder="e.g. Milk" autocomplete="off" /><span class="cw-arr">▾</span><div class="sugg" id="sh-n-s"></div></div></div>
-            <div class="fld" style="flex:0 0 100px"><label>Price/unit</label><input type="number" id="sh-p" placeholder="0.00" min="0" step="0.01" inputmode="decimal" /></div>
-            <div class="fld" style="flex:0 0 64px"><label>Qty</label><input type="number" id="sh-q" value="1" min="1" inputmode="numeric" /></div>
+            <div class="fld" style="flex:0 0 100px"><label>Price/unit</label><input type="text" inputmode="decimal" id="sh-p" placeholder="0,00" min="0" step="0.01" inputmode="decimal" /></div>
+            <div class="fld" style="flex:0 0 64px"><label>Qty</label><input type="text" inputmode="decimal" id="sh-q" value="1" min="1" inputmode="numeric" /></div>
             <div style="padding-bottom:1px"><button class="btn pri" id="cart-add-btn">Add</button></div>
           </div>
           <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
-            <div class="fld" style="flex:0 0 155px"><label>Budget cap (optional)</label><input type="number" id="sh-cap" placeholder="e.g. 60" min="0" step="0.01" inputmode="decimal" /></div>
+            <div class="fld" style="flex:0 0 155px"><label>Budget cap (optional)</label><input type="text" inputmode="decimal" id="sh-cap" placeholder="e.g. 60" min="0" step="0.01" inputmode="decimal" /></div>
             <div style="padding-bottom:1px"><button class="btn sm del" id="cart-clear-btn">Clear cart</button></div>
           </div>
         </div>
@@ -315,13 +319,14 @@
           <div class="card-h">Add recurring transaction</div>
           <div class="fg fg3">
             <div class="fld"><label>Name</label><input type="text" id="rc-n" placeholder="e.g. Rent, Netflix" /></div>
-            <div class="fld"><label>Amount</label><input type="number" id="rc-amt" placeholder="0.00" min="0" step="0.01" inputmode="decimal" /></div>
+            <div class="fld"><label>Amount</label><input type="text" inputmode="decimal" id="rc-amt" placeholder="0,00" min="0" step="0.01" inputmode="decimal" /></div>
             <div class="fld"><label>Type</label><select id="rc-type"><option value="expense">Expense</option><option value="income">Income</option></select></div>
           </div>
-          <div class="fg fg3">
-            <div class="fld"><label>Category</label><select id="rc-cat"><option>🏠 Housing</option><option>🍔 Food</option><option>💡 Utilities</option><option>🎮 Entertainment</option><option>💊 Health</option><option>📚 Education</option><option>💰 Income</option><option>📦 Other</option></select></div>
-            <div class="fld"><label>Day of month</label><input type="number" id="rc-day" placeholder="1–28" min="1" max="28" value="1" inputmode="numeric" /></div>
+          <div class="fg fg4">
+            <div class="fld"><label>Category</label><select id="rc-cat"><option>🏠 Housing</option><option>🍔 Food</option><option>💡 Utilities</option><option>🚗 Transportation</option><option>🎮 Entertainment</option><option>💊 Health</option><option>📚 Education</option><option>💰 Income</option><option>📦 Other</option></select></div>
+            <div class="fld"><label>Day of month</label><input type="text" inputmode="decimal" id="rc-day" placeholder="1–28" min="1" max="28" value="1" inputmode="numeric" /></div>
             <div class="fld" style="display:flex;align-items:flex-end"><button class="btn pri" id="recur-add-btn" style="width:100%">Add recurring</button></div>
+            <div class="fld"><label>Start date</label><input type="date" id="rc-start" /></div>
           </div>
         </div>
         <div class="card"><div class="card-h">Due this month</div><div id="due-list"><div class="empty">Nothing due.</div></div></div>
@@ -332,7 +337,7 @@
       <section id="s-budget" class="screen">
         <div class="card">
           <div class="card-h">50 / 30 / 20 rule</div>
-          <div class="fld" style="margin-bottom:10px"><label>Income target — leave blank to use logged income</label><input type="number" id="b-inc" placeholder="Monthly income" inputmode="decimal" /></div>
+          <div class="fld" style="margin-bottom:10px"><label>Income target — leave blank to use logged income</label><input type="text" inputmode="decimal" id="b-inc" placeholder="Monthly income" inputmode="decimal" /></div>
           <div id="b-bars"></div>
           <div class="rc" id="b-rule"></div>
         </div>
@@ -366,11 +371,22 @@
       <section id="s-accs" class="screen">
         <div class="card">
           <div class="card-h">Add account</div>
-          <div class="fg fg3">
-            <div class="fld"><label>Name</label><input type="text" id="ac-n" placeholder="e.g. Main bank" /></div>
-            <div class="fld"><label>Type</label><select id="ac-type"><option value="bank">🏦 Bank</option><option value="cash">💵 Cash</option><option value="savings">💰 Savings</option><option value="card">💳 Card</option></select></div>
-            <div class="fld" style="display:flex;align-items:flex-end"><button class="btn pri" id="acc-add-btn" style="width:100%">Add account</button></div>
+          <div style="font-size:11px;color:var(--t3);background:var(--mb);border-radius:8px;padding:9px 11px;margin-bottom:12px;line-height:1.5">
+            💡 <strong style="color:var(--t2)">How balance works:</strong> Enter your current real balance as the opening balance. Every income linked to this account adds to it; every expense deducts. Running balance = opening + income − expenses.
           </div>
+          <div class="fg fg4">
+            <div class="fld"><label>Account name</label><input type="text" id="ac-n" placeholder="e.g. Sparkasse, Cash" /></div>
+            <div class="fld"><label>Type</label><select id="ac-type"><option value="bank">🏦 Bank</option><option value="cash">💵 Cash</option><option value="savings">💰 Savings</option><option value="card">💳 Card</option></select></div>
+            <div class="fld"><label>Opening balance (current real balance)</label><input type="text" inputmode="decimal" id="ac-bal" placeholder="e.g. 1250,00" /></div>
+            <div class="fld"><label>Account currency</label>
+              <select id="ac-cur">
+                <option value="€">€ EUR</option><option value="$">$ USD</option><option value="£">£ GBP</option>
+                <option value="₹">₹ INR</option><option value="¥">¥ JPY</option>
+                <option value="Fr">Fr CHF</option><option value="kr">kr SEK</option><option value="zł">zł PLN</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn pri" id="acc-add-btn">Add account</button>
         </div>
         <div class="acc-grid" id="acc-grid"><div class="empty" style="grid-column:1/-1">No accounts yet.</div></div>
       </section>
