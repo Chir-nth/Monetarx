@@ -1,9 +1,7 @@
 /* ═══════════════════════════════════════════════════════════
    MONETRAX — app.js
    Track Smarter. Live Better.
-   All state, rendering, and event wiring in one clean file.
 ═══════════════════════════════════════════════════════════ */
-
 'use strict';
 
 /* ── CONSTANTS ── */
@@ -22,8 +20,8 @@ const PAGES = {
 
 /* ── EXCHANGE RATES (relative to EUR) ── */
 const RATES_TO_EUR = {
-  '€': 1, '$': 0.92, '£': 1.17, '₹': 0.011,
-  '¥': 0.0062, 'Fr': 1.04, 'kr': 0.087, 'zł': 0.23
+  '€':1, '$':0.92, '£':1.17, '₹':0.011,
+  '¥':0.0062, 'Fr':1.04, 'kr':0.087, 'zł':0.23
 };
 
 function toDisplay(amount, fromCur) {
@@ -33,7 +31,9 @@ function toDisplay(amount, fromCur) {
 }
 
 function fmtCur(amount, cur) {
-  return (cur || S.cur) + Math.abs(amount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (cur || S.cur) + Math.abs(amount).toLocaleString('de-DE', {
+    minimumFractionDigits: 2, maximumFractionDigits: 2
+  });
 }
 
 /* ── STATE ── */
@@ -55,8 +55,6 @@ function loadState() {
   try { S.sbOpen = JSON.parse(LS.getItem('mtx_sb')    || 'false'); } catch (_) {}
   S.cur       = LS.getItem('mtx_cur') || '€';
   S.chartType = LS.getItem('mtx_ct')  || 'bar';
-
-  // Merge saved custom list items with defaults
   let saved = {};
   try { saved = JSON.parse(LS.getItem('mtx_lists') || '{}'); } catch (_) {}
   Object.keys(DEFAULTS).forEach(k => {
@@ -74,7 +72,6 @@ function saveAll() {
   LS.setItem('mtx_sb',    S.sbOpen);
   LS.setItem('mtx_cur',   S.cur);
   LS.setItem('mtx_ct',    S.chartType);
-
   const custom = {};
   Object.keys(DEFAULTS).forEach(k => {
     custom[k] = S.lists[k].filter(i => !DEFAULTS[k].includes(i));
@@ -82,16 +79,20 @@ function saveAll() {
   LS.setItem('mtx_lists', JSON.stringify(custom));
 }
 
-/* ── DOM HELPER ── */
+/* ── DOM HELPERS ── */
 const $ = id => document.getElementById(id);
-function val(id)     { return $(id).value; }
-function setVal(id,v){ $(id).value = v; }
+function val(id)      { const el = $(id); return el ? el.value : ''; }
+function setVal(id,v) { const el = $(id); if (el) el.value = v; }
+function int(id)      { return parseInt(val(id)) || 0; }
+
+/* ── COMMA-SAFE DECIMAL: accepts both 1,50 and 1.50 ── */
 function parseAmount(id) {
   const raw = val(id).trim().replace(',', '.');
   const n = parseFloat(raw);
   return isNaN(n) ? 0 : Math.round(n * 100) / 100;
 }
 
+/* Silently convert comma → dot while typing */
 function fixDecimalInput(el) {
   if (!el) return;
   el.addEventListener('input', () => {
@@ -103,8 +104,6 @@ function fixDecimalInput(el) {
   });
 }
 
-function int(id)     { return parseInt(val(id))   || 0; }
-
 /* ── DATE ── */
 function today() { return new Date().toISOString().split('T')[0]; }
 
@@ -114,8 +113,8 @@ function fmt(n) {
 }
 
 /* ── MONTH UTILITIES ── */
-function selMon() { return val('msel') || new Date().toISOString().slice(0, 7); }
-function mTxs()   { const m = selMon(); return S.txs.filter(t => t.date?.startsWith(m)); }
+function selMon()  { return val('msel') || new Date().toISOString().slice(0, 7); }
+function mTxs()    { const m = selMon(); return S.txs.filter(t => t.date?.startsWith(m)); }
 function prevMon() {
   const [y, m] = selMon().split('-').map(Number);
   const d = new Date(y, m - 2, 1);
@@ -135,10 +134,10 @@ function totals(list) {
 /* ── CUSTOM LISTS ── */
 function addToList(k, v) {
   if (!v?.trim()) return;
-  const val = v.trim();
+  const item = v.trim();
   if (!S.lists[k]) S.lists[k] = [];
-  if (!S.lists[k].some(i => i.toLowerCase() === val.toLowerCase())) {
-    S.lists[k].unshift(val);
+  if (!S.lists[k].some(i => i.toLowerCase() === item.toLowerCase())) {
+    S.lists[k].unshift(item);
     saveAll();
   }
 }
@@ -147,11 +146,9 @@ function removeFromList(k, v) {
   saveAll();
 }
 
-/* ── ACCOUNT NAME LOOKUP ── */
-function accName(id) {
-  const a = S.accs.find(a => a.id === id);
-  return a ? a.name : '';
-}
+/* ── ACCOUNT HELPERS ── */
+function accName(id) { const a = S.accs.find(a => a.id === id); return a ? a.name : ''; }
+function accById(id) { return S.accs.find(a => a.id === id); }
 
 /* ── TOAST ── */
 let _toastTimer = null;
@@ -161,6 +158,15 @@ function toast(msg) {
   el.classList.add('on');
   if (_toastTimer) clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => el.classList.remove('on'), 2800);
+}
+
+/* ── BUTTON LOCK: prevents double-tap duplicate submissions ── */
+function lockBtn(id, ms) {
+  const el = $(id);
+  if (!el) return;
+  el.disabled = true;
+  el.style.opacity = '0.5';
+  setTimeout(() => { el.disabled = false; el.style.opacity = ''; }, ms || 2000);
 }
 
 /* ── DARK MODE ── */
@@ -173,7 +179,7 @@ function applyTheme() {
   destroyCharts();
 }
 
-/* ── CHART REFERENCES ── */
+/* ── CHARTS ── */
 let trendC = null, catC = null, cmpC = null;
 function destroyCharts() {
   if (trendC) { trendC.destroy(); trendC = null; }
@@ -182,13 +188,9 @@ function destroyCharts() {
 }
 
 /* ── SIDEBAR ── */
-function applySidebar() {
-  $('sb').classList.toggle('open', S.sbOpen);
-}
+function applySidebar() { $('sb').classList.toggle('open', S.sbOpen); }
 
-/* ══════════════════════════════════════════
-   MONTH SELECTOR BUILD
-══════════════════════════════════════════ */
+/* ── MONTH SELECT ── */
 function buildMonths() {
   const el = $('msel'), now = new Date(), opts = [];
   for (let i = 0; i < 12; i++) {
@@ -199,22 +201,13 @@ function buildMonths() {
   el.innerHTML = opts.join('');
 }
 
-/* ══════════════════════════════════════════
-   NAVIGATION
-══════════════════════════════════════════ */
+/* ── NAVIGATION ── */
 function navigate(pageId) {
   document.querySelectorAll('.ni').forEach(b => b.classList.toggle('act', b.dataset.page === pageId));
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   $('s-' + pageId).classList.add('active');
   $('pg-title').textContent = PAGES[pageId] || pageId;
-
-  // Close sidebar on mobile tap
-  if (window.innerWidth <= 640 && S.sbOpen) {
-    S.sbOpen = false;
-    saveAll();
-    applySidebar();
-  }
-
+  if (window.innerWidth <= 640 && S.sbOpen) { S.sbOpen = false; saveAll(); applySidebar(); }
   if (pageId === 'cart')  renderCart();
   if (pageId === 'slist') renderSl();
   if (pageId === 'recur') renderRecur();
@@ -223,9 +216,7 @@ function navigate(pageId) {
   renderAll();
 }
 
-/* ══════════════════════════════════════════
-   AUTOCOMPLETE / COMBO-BOX
-══════════════════════════════════════════ */
+/* ── AUTOCOMPLETE ── */
 function showSugg(inputId, listKey, query) {
   const el = $(inputId + '-s');
   if (!el) return;
@@ -233,7 +224,6 @@ function showSugg(inputId, listKey, query) {
   const q = query.trim().toLowerCase();
   const filtered = q === '' ? items : items.filter(i => i.toLowerCase().includes(q));
   if (!filtered.length) { el.classList.remove('open'); return; }
-
   el.innerHTML = filtered.map(item => {
     const esc = item.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     return `<div class="si" onmousedown="pickSugg('${inputId}','${listKey}','${esc}')">
@@ -243,26 +233,16 @@ function showSugg(inputId, listKey, query) {
   }).join('');
   el.classList.add('open');
 }
-
-function hideSugg(sugId, delay) {
-  setTimeout(() => { const el = $(sugId); if (el) el.classList.remove('open'); }, delay || 0);
-}
-
+function hideSugg(sugId, delay) { setTimeout(() => { const el = $(sugId); if (el) el.classList.remove('open'); }, delay || 0); }
 function pickSugg(inputId, listKey, value) {
   setVal(inputId, value);
   hideSugg(inputId + '-s', 0);
-  // Auto-fill price if picking from cart product list
   if (inputId === 'sh-n') {
     const last = [...S.cart].reverse().find(i => i.name.toLowerCase() === value.toLowerCase());
     if (last) setVal('sh-p', last.price.toFixed(2));
   }
 }
-
-function delSugg(listKey, value, inputId) {
-  removeFromList(listKey, value);
-  showSugg(inputId, listKey, val(inputId));
-}
-
+function delSugg(listKey, value, inputId) { removeFromList(listKey, value); showSugg(inputId, listKey, val(inputId)); }
 function bindCombo(inputId, listKey) {
   const el = $(inputId);
   if (!el) return;
@@ -275,21 +255,14 @@ function bindCombo(inputId, listKey) {
    RENDER PIPELINE
 ══════════════════════════════════════════ */
 function renderAll() {
-  renderMetrics();
-  renderInsights();
-  renderRecent();
-  renderHist();
-  renderTrend();
-  renderBudget();
-  renderCats();
-
+  renderMetrics(); renderInsights(); renderRecent(); renderHist();
+  renderTrend(); renderBudget(); renderCats();
   const { bal } = totals(S.txs);
   const pill = $('top-bal');
   pill.textContent = 'Balance: ' + (bal < 0 ? '-' : '') + fmt(bal);
   pill.style.color = bal < 0 ? 'var(--exp)' : 'var(--t2)';
 }
 
-/* ── METRICS ── */
 function renderMetrics() {
   const mt = mTxs(), { inc, exp } = totals(mt), { bal } = totals(S.txs);
   $('d-inc').textContent = fmt(inc);
@@ -299,67 +272,58 @@ function renderMetrics() {
   b.className = 'met-v ' + (bal < 0 ? 'r' : 'b');
 }
 
-/* ── INSIGHTS ── */
 function renderInsights() {
   const mt  = mTxs();
-  const inc = mt.filter(isIn).reduce((s, t) => s + t.amount, 0);
-  const exp = mt.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-
-  // Savings rate
-  const sr = inc > 0 ? Math.round((inc - exp) / inc * 100) : null;
+  const inc = mt.filter(isIn).reduce((s, t) => s + txAmt(t), 0);
+  const exp = mt.filter(t => t.type === 'expense').reduce((s, t) => s + txAmt(t), 0);
+  const sr  = inc > 0 ? Math.round((inc - exp) / inc * 100) : null;
   const savEl = $('i-sav');
   savEl.textContent = sr !== null ? sr + '%' : '—';
   savEl.style.color = sr === null ? 'var(--t3)' : sr >= 20 ? 'var(--inc)' : sr >= 0 ? 'var(--bal)' : 'var(--exp)';
-
-  // Top category
   const catMap = {};
-  mt.filter(t => t.type === 'expense').forEach(t => { catMap[t.cat] = (catMap[t.cat] || 0) + t.amount; });
+  mt.filter(t => t.type === 'expense').forEach(t => { catMap[t.cat] = (catMap[t.cat] || 0) + txAmt(t); });
   const cats = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
   $('i-cat').textContent   = cats.length ? cats[0][0] : '—';
   $('i-cat-a').textContent = cats.length ? fmt(cats[0][1]) : '';
-
-  // Avg daily spend
   const now = new Date(), [sy, smm] = selMon().split('-').map(Number);
   const isCur = sy === now.getFullYear() && smm - 1 === now.getMonth();
-  const days   = isCur ? now.getDate() : new Date(sy, smm, 0).getDate();
-  $('i-daily').textContent = exp > 0 ? fmt(exp / days) : '—';
+  const days  = isCur ? now.getDate() : new Date(sy, smm, 0).getDate();
+  $('i-daily').textContent   = exp > 0 ? fmt(exp / days) : '—';
   $('i-daily-s').textContent = `over ${days} days`;
 }
 
-/* ── TX HTML BUILDER ── */
-function txIco(t)    { return t.type === 'transfer_in' ? '↙' : t.type === 'transfer_out' ? '↗' : (t.cat?.split(' ')[0] || '💰'); }
-function txBg(t)     { return (t.type === 'income' || t.type === 'transfer_in') ? 'rgba(29,158,117,.15)' : 'rgba(216,90,48,.12)'; }
-function txSign(t)   { return isIn(t) ? '+' : '-'; }
-function txColor(t)  { return isIn(t) ? 'var(--inc)' : 'var(--exp)'; }
+function txIco(t)   { return t.type === 'transfer_in' ? '↙' : t.type === 'transfer_out' ? '↗' : (t.cat?.split(' ')[0] || '💰'); }
+function txBg(t)    { return isIn(t) ? 'rgba(29,158,117,.15)' : 'rgba(216,90,48,.12)'; }
+function txSign(t)  { return isIn(t) ? '+' : '-'; }
+function txColor(t) { return isIn(t) ? 'var(--inc)' : 'var(--exp)'; }
 function txBadge(t) {
   if (!t.ttype) return '';
-  const map = { recv: '<span class="badge bg">received</span>', sent: '<span class="badge br">sent</span>', adde: '<span class="badge bb">account</span>' };
-  return map[t.ttype] || '';
+  return { recv: '<span class="badge bg">received</span>', sent: '<span class="badge br">sent</span>', adde: '<span class="badge bb">account</span>' }[t.ttype] || '';
 }
 
 function txHTML(t, showDel) {
-  const acc = t.accId ? ` · ${accName(t.accId)}` : '';
-  const cat = t.cat ? t.cat.split(' ').slice(1).join(' ') + ' · ' : '';
+  const acc  = t.accId ? ` · ${accName(t.accId)}` : '';
+  const cat  = t.cat ? t.cat.split(' ').slice(1).join(' ') + ' · ' : '';
   const date = new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const nativeTag = t.cur && t.cur !== S.cur
+    ? `<span class="badge bb" style="margin-left:4px">${fmtCur(t.amount, t.cur)}</span>` : '';
   return `<div class="tx">
     <div class="tx-ico" style="background:${txBg(t)}">${txIco(t)}</div>
     <div class="tx-inf">
-      <div class="tx-n">${t.desc}${txBadge(t)}</div>
+      <div class="tx-n">${t.desc}${txBadge(t)}${nativeTag}</div>
       <div class="tx-m">${cat}${date}${acc}</div>
     </div>
-    <div class="tx-amt" style="color:${txColor(t)}">${txSign(t)}${fmt(t.amount)}</div>
+    <div class="tx-amt" style="color:${txColor(t)}">${txSign(t)}${fmt(txAmt(t))}</div>
     ${showDel ? `<button class="tx-d" onclick="deleteTx(${t.id})">✕</button>` : ''}
   </div>`;
 }
 
-/* ── RECENT ── */
 function renderRecent() {
   const el = $('recent');
   const rows = [...S.txs].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
   el.innerHTML = rows.length ? rows.map(t => txHTML(t, false)).join('') : '<div class="empty">No transactions yet.</div>';
 }
 
-/* ── HISTORY ── */
 function renderHist() {
   const el = $('hist-list'), cnt = $('h-count');
   const q  = ($('h-search')?.value || '').toLowerCase();
@@ -373,30 +337,24 @@ function renderHist() {
     : `<div class="empty">No transactions${q ? ` matching "${q}"` : ' this month'}.</div>`;
 }
 
-function deleteTx(id) {
-  S.txs = S.txs.filter(t => t.id !== id);
-  saveAll(); renderAll(); toast('Transaction deleted.');
-}
+function deleteTx(id) { S.txs = S.txs.filter(t => t.id !== id); saveAll(); renderAll(); toast('Transaction deleted.'); }
 
 function clearMonthTxs() {
   const m = mTxs();
   if (!m.length) { toast('Nothing to clear this month.'); return; }
   if (!confirm(`Delete all ${m.length} transactions for this month? This cannot be undone.`)) return;
-  const mk = selMon();
-  S.txs = S.txs.filter(t => !t.date?.startsWith(mk));
+  S.txs = S.txs.filter(t => !t.date?.startsWith(selMon()));
   saveAll(); renderAll(); toast('Month cleared.');
 }
 
-/* ── TREND CHART ── */
 function renderTrend() {
   const now = new Date(), mons = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     mons.push({ l: d.toLocaleString('en', { month: 'short' }), y: d.getFullYear(), m: d.getMonth() });
   }
-  const mE = mons.map(mo => S.txs.filter(t => isOut(t) && new Date(t.date).getMonth() === mo.m && new Date(t.date).getFullYear() === mo.y).reduce((s, t) => s + t.amount, 0));
-  const mI = mons.map(mo => S.txs.filter(t => isIn(t)  && new Date(t.date).getMonth() === mo.m && new Date(t.date).getFullYear() === mo.y).reduce((s, t) => s + t.amount, 0));
-
+  const mE = mons.map(mo => S.txs.filter(t => isOut(t) && new Date(t.date).getMonth() === mo.m && new Date(t.date).getFullYear() === mo.y).reduce((s, t) => s + txAmt(t), 0));
+  const mI = mons.map(mo => S.txs.filter(t => isIn(t)  && new Date(t.date).getMonth() === mo.m && new Date(t.date).getFullYear() === mo.y).reduce((s, t) => s + txAmt(t), 0));
   if (trendC) trendC.destroy();
   const isLine = S.chartType === 'line';
   trendC = new Chart($('trendChart'), {
@@ -416,39 +374,32 @@ function renderTrend() {
   });
 }
 
-/* ── BUDGET ── */
 function renderBudget() {
   const mt  = mTxs();
-  const inc = flt('b-inc') || mt.filter(isIn).reduce((s, t) => s + t.amount, 0);
-  const needs   = mt.filter(t => t.type === 'expense' && t.btype === 'needs').reduce((s, t) => s + t.amount, 0);
-  const wants   = mt.filter(t => t.type === 'expense' && t.btype === 'wants').reduce((s, t) => s + t.amount, 0);
-  const savings = mt.filter(t => t.type === 'expense' && t.btype === 'savings').reduce((s, t) => s + t.amount, 0);
+  const inc = (parseAmount('b-inc') || 0) || mt.filter(isIn).reduce((s, t) => s + txAmt(t), 0);
+  const needs   = mt.filter(t => t.type === 'expense' && t.btype === 'needs').reduce((s, t) => s + txAmt(t), 0);
+  const wants   = mt.filter(t => t.type === 'expense' && t.btype === 'wants').reduce((s, t) => s + txAmt(t), 0);
+  const savings = mt.filter(t => t.type === 'expense' && t.btype === 'savings').reduce((s, t) => s + txAmt(t), 0);
   const bN = inc * .5, bW = inc * .3, bS = inc * .2;
-
   function bar(lbl, spent, budget, color) {
-    const pct  = budget > 0 ? Math.min(100, Math.round(spent / budget * 100)) : 0;
-    const over = spent > budget && budget > 0;
-    return `<div class="brow"><div class="bl">${lbl}</div><div class="bt"><div class="bf" style="width:${pct}%;background:${over ? '#e24b4a' : color}"></div></div><div class="bn">${fmt(spent)} / ${fmt(budget)}</div></div>`;
+    const pct = budget > 0 ? Math.min(100, Math.round(spent / budget * 100)) : 0;
+    return `<div class="brow"><div class="bl">${lbl}</div><div class="bt"><div class="bf" style="width:${pct}%;background:${spent > budget && budget > 0 ? '#e24b4a' : color}"></div></div><div class="bn">${fmt(spent)} / ${fmt(budget)}</div></div>`;
   }
-
   $('b-bars').innerHTML = inc
     ? [bar('Needs', needs, bN, '#378add'), bar('Wants', wants, bW, '#7f77dd'), bar('Savings', savings, bS, '#1d9e75')].join('')
     : '<div class="empty">Log income or set a target above.</div>';
-
   $('b-rule').innerHTML = inc
     ? [{ l:'Needs',p:50,b:bN,bg:'#e6f1fb',c:'#185fa5' }, { l:'Wants',p:30,b:bW,bg:'#eeedfe',c:'#534ab7' }, { l:'Savings',p:20,b:bS,bg:'#e1f5ee',c:'#0f6e56' }]
         .map(r => `<div class="rcc" style="background:${r.bg}"><div style="font-size:16px;font-weight:500;color:${r.c}">${r.p}%</div><div style="font-size:10px;color:${r.c}">${r.l}<br>${fmt(r.b)}</div></div>`).join('')
     : '';
 }
 
-/* ── CATEGORIES ── */
 function renderCats() {
   const mt = mTxs().filter(t => t.type === 'expense');
   const catMap = {};
-  mt.forEach(t => { catMap[t.cat] = (catMap[t.cat] || 0) + t.amount; });
+  mt.forEach(t => { catMap[t.cat] = (catMap[t.cat] || 0) + txAmt(t); });
   const cats = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
   const cols  = ['#378add','#1d9e75','#d4537e','#ba7517','#7f77dd','#d85a30','#639922','#888780','#e24b4a','#5dcaa5'];
-
   if (catC) catC.destroy();
   const cv = $('catChart');
   if (!cats.length) {
@@ -462,26 +413,29 @@ function renderCats() {
     data: { labels: cats.map(c => c[0]), datasets: [{ data: cats.map(c => c[1]), backgroundColor: cols.slice(0, cats.length), borderWidth: 0, hoverOffset: 4 }] },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + fmt(ctx.parsed) } } } }
   });
-
   $('cat-leg').innerHTML = cats.map((c, i) => `<span class="ld"><span class="ldot" style="background:${cols[i]}"></span>${c[0].split(' ').slice(1).join(' ')} ${fmt(c[1])}</span>`).join('');
   const total = cats.reduce((s, c) => s + c[1], 0);
-  $('cat-bd').innerHTML  = cats.map(([cat, amt]) =>
+  $('cat-bd').innerHTML = cats.map(([cat, amt]) =>
     `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--bd);font-size:12px;color:var(--t)"><span>${cat}</span><span style="color:var(--t2)">${fmt(amt)} (${total > 0 ? Math.round(amt / total * 100) : 0}%)</span></div>`
   ).join('');
 }
 
 /* ══════════════════════════════════════════
    ADD INCOME
+   Fields clear immediately so user sees the form reset.
+   Button locks for 2s to prevent double-tap.
 ══════════════════════════════════════════ */
 function addIncome() {
-  const amount = parseAmount('i-amt'), source = val('i-src').trim(), date = val('i-date'), accId = val('i-acc');
+  const amount = parseAmount('i-amt'), source = val('i-src').trim();
+  const date = val('i-date'), accId = val('i-acc');
   if (!amount || amount <= 0) { toast('Enter a valid amount.'); return; }
-  const acc = S.accs.find(a => a.id === accId);
-  const cur = acc?.cur || S.cur;
+  const cur = accById(accId)?.cur || S.cur;
+  lockBtn('add-inc-btn');
   addToList('incSrcs', source);
-  S.txs.push({ id: Date.now(), type: 'income', amount, desc: source || 'Income', date, cat: '💰 Income', btype: 'income', accId, cur });
-  saveAll(); renderAll(); toast('Income added!');
   setVal('i-amt', ''); setVal('i-src', ''); setVal('i-date', today());
+  S.txs.push({ id: Date.now(), type: 'income', amount, desc: source || 'Income', date, cat: '💰 Income', btype: 'income', accId, cur });
+  saveAll(); renderAll();
+  toast('✅ Income added!');
   navigate('hist');
 }
 
@@ -492,12 +446,13 @@ function addExpense() {
   const amount = parseAmount('e-amt'), desc = val('e-dsc').trim(), date = val('e-date');
   const cat = val('e-cat'), btype = val('e-btype'), accId = val('e-acc');
   if (!amount || amount <= 0) { toast('Enter a valid amount.'); return; }
-  const acc = S.accs.find(a => a.id === accId);
-  const cur = acc?.cur || S.cur;
+  const cur = accById(accId)?.cur || S.cur;
+  lockBtn('add-exp-btn');
   if (desc) addToList('expDscs', desc);
-  S.txs.push({ id: Date.now(), type: 'expense', amount, desc: desc || cat, date, cat, btype, accId, cur });
-  saveAll(); renderAll(); toast('Expense added!');
   setVal('e-amt', ''); setVal('e-dsc', ''); setVal('e-date', today());
+  S.txs.push({ id: Date.now(), type: 'expense', amount, desc: desc || cat, date, cat, btype, accId, cur });
+  saveAll(); renderAll();
+  toast('✅ Expense added!');
   navigate('hist');
 }
 
@@ -509,14 +464,28 @@ function updateTransferPreview() {
   if (!amount) { el.style.display = 'none'; return; }
   const isI = type === 'recv' || type === 'adde';
   const msgs = {
-    recv: `+ ${fmt(amount)} added to balance — received from ${name}`,
-    sent: `− ${fmt(amount)} deducted from balance — sent to ${name}`,
-    adde: `+ ${fmt(amount)} added to balance — from ${name}`
+    recv: `+ ${fmt(amount)} added — received from ${name}`,
+    sent: `− ${fmt(amount)} deducted — sent to ${name}`,
+    adde: `+ ${fmt(amount)} added — from ${name}`
   };
-  el.textContent = msgs[type];
-  el.style.display   = 'block';
+  el.textContent = msgs[type] || '';
+  el.style.display    = 'block';
   el.style.background = isI ? 'var(--wg)' : 'var(--wo)';
   el.style.color      = isI ? 'var(--wgt)' : 'var(--wot)';
+}
+
+function updateTransferAccDropdown() {
+  const type = val('t-type'), wrap = $('t-acc-wrap');
+  if (!wrap) return;
+  if (type === 'adde') {
+    wrap.style.display = 'block';
+    const sel = $('t-acc-sel');
+    if (sel) sel.innerHTML = S.accs.length
+      ? S.accs.map(a => `<option value="${a.id}">${a.name}${a.cur ? ' (' + a.cur + ')' : ''}</option>`).join('')
+      : '<option value="">No accounts yet</option>';
+  } else {
+    wrap.style.display = 'none';
+  }
 }
 
 function addTransfer() {
@@ -526,21 +495,22 @@ function addTransfer() {
   const isI  = type === 'recv' || type === 'adde';
   const icos = { recv: '↙️', sent: '↗️', adde: '🏦' };
   const lbls = { recv: 'From', sent: 'To', adde: 'From' };
-  let cur = S.cur, fromAccName = name;
+  let cur = S.cur, displayName = name;
   if (type === 'adde') {
-    const fromAccId = val('t-acc-sel');
-    const fromAcc = S.accs.find(a => a.id === fromAccId);
-    if (fromAcc) { cur = fromAcc.cur || S.cur; fromAccName = fromAcc.name; }
+    const fromAcc = accById(val('t-acc-sel'));
+    if (fromAcc) { cur = fromAcc.cur || S.cur; displayName = fromAcc.name; }
   }
-  S.txs.push({
-    id: Date.now(), type: isI ? 'transfer_in' : 'transfer_out', amount, cur,
-    desc: `${icos[type]} ${lbls[type]}: ${fromAccName || '—'}${note ? ' — ' + note : ''}`,
-    date, cat: icos[type] + ' Transfer', btype: 'transfer', ttype: type
-  });
-  saveAll(); renderAll(); toast('Transfer logged!');
+  lockBtn('add-trf-btn');
   ['t-amt','t-name','t-note'].forEach(id => setVal(id, ''));
   setVal('t-date', today());
   $('tp').style.display = 'none';
+  S.txs.push({
+    id: Date.now(), type: isI ? 'transfer_in' : 'transfer_out', amount, cur,
+    desc: `${icos[type]} ${lbls[type]}: ${displayName || '—'}${note ? ' — ' + note : ''}`,
+    date, cat: icos[type] + ' Transfer', btype: 'transfer', ttype: type
+  });
+  saveAll(); renderAll();
+  toast('✅ Transfer logged!');
   navigate('hist');
 }
 
@@ -548,8 +518,8 @@ function addTransfer() {
    SHOPPING CART
 ══════════════════════════════════════════ */
 function addCartItem() {
-  const name = val('sh-n').trim(), price = flt('sh-p'), qty = int('sh-q') || 1;
-  if (!name)            { toast('Enter a product name.'); return; }
+  const name = val('sh-n').trim(), price = parseAmount('sh-p'), qty = int('sh-q') || 1;
+  if (!name)             { toast('Enter a product name.'); return; }
   if (!price || price <= 0) { toast('Enter a valid price.');   return; }
   addToList('prods', name);
   S.cart.push({ id: Date.now(), name, price, qty });
@@ -563,10 +533,7 @@ function changeQty(id, delta) {
   if (item) { item.qty = Math.max(1, item.qty + delta); saveAll(); renderCart(); }
 }
 
-function removeCartItem(id) {
-  S.cart = S.cart.filter(i => i.id !== id);
-  saveAll(); renderCart();
-}
+function removeCartItem(id) { S.cart = S.cart.filter(i => i.id !== id); saveAll(); renderCart(); }
 
 function clearCart() {
   if (!S.cart.length) { toast('Cart is already empty.'); return; }
@@ -575,18 +542,12 @@ function clearCart() {
 }
 
 function renderCart() {
-  const el   = $('cart-items'), foot = $('cart-foot'), cc = $('cart-checkout'), cnt = $('sh-cnt');
-  const cap  = flt('sh-cap');
-
-  if (!S.cart.length) {
-    el.innerHTML = '<div class="empty">Cart is empty.</div>';
-    foot.innerHTML = ''; cc.style.display = 'none'; cnt.textContent = ''; return;
-  }
-
+  const el = $('cart-items'), foot = $('cart-foot'), cc = $('cart-checkout'), cnt = $('sh-cnt');
+  const cap = parseAmount('sh-cap');
+  if (!S.cart.length) { el.innerHTML = '<div class="empty">Cart is empty.</div>'; foot.innerHTML = ''; cc.style.display = 'none'; cnt.textContent = ''; return; }
   const total = S.cart.reduce((s, i) => s + i.price * i.qty, 0);
   const units = S.cart.reduce((s, i) => s + i.qty, 0);
   cnt.textContent = `${S.cart.length} product${S.cart.length !== 1 ? 's' : ''} · ${units} unit${units !== 1 ? 's' : ''}`;
-
   el.innerHTML = S.cart.map(item => `
     <div class="si-row">
       <div class="si-name">${item.name}</div>
@@ -599,7 +560,6 @@ function renderCart() {
       <div class="si-sub">${fmt(item.price * item.qty)}</div>
       <button class="tx-d" onclick="removeCartItem(${item.id})">✕</button>
     </div>`).join('');
-
   let warn = '';
   if (cap > 0) {
     const over = total > cap, diff = Math.abs(total - cap);
@@ -607,7 +567,6 @@ function renderCart() {
       ? `<div style="font-size:11px;padding:6px 10px;border-radius:7px;margin-top:7px;text-align:center;font-weight:500;background:var(--wo);color:var(--wot)">Over budget by ${fmt(diff)}</div>`
       : `<div style="font-size:11px;padding:6px 10px;border-radius:7px;margin-top:7px;text-align:center;font-weight:500;background:var(--wg);color:var(--wgt)">${fmt(diff)} remaining</div>`;
   }
-
   foot.innerHTML = `<div class="sfooter">
     <div class="srow"><span>Units</span><span>${units}</span></div>
     <div class="srow"><span>Products</span><span>${S.cart.length}</span></div>
@@ -619,26 +578,33 @@ function renderCart() {
 
 function checkoutCart() {
   if (!S.cart.length) return;
-  const date  = val('sh-date') || today(), btype = val('sh-bt');
+  const date = val('sh-date') || today(), btype = val('sh-bt');
   const total = S.cart.reduce((s, i) => s + i.price * i.qty, 0);
   const names = S.cart.slice(0, 3).map(i => i.name).join(', ') + (S.cart.length > 3 ? ` +${S.cart.length - 3} more` : '');
-  S.txs.push({ id: Date.now(), type: 'expense', amount: total, desc: 'Shopping: ' + names, date, cat: '🛒 Shopping', btype });
+  S.txs.push({ id: Date.now(), type: 'expense', amount: total, desc: 'Shopping: ' + names, date, cat: '🛒 Shopping', btype, cur: S.cur });
   saveAll(); S.cart = []; saveAll(); renderCart(); renderAll();
   toast('Shopping added to expenses!'); navigate('hist');
 }
 
 /* ══════════════════════════════════════════
-   RECURRING TRANSACTIONS
+   RECURRING
+   - Transportation category
+   - Start date field
 ══════════════════════════════════════════ */
 function addRecurring() {
-  const name  = val('rc-n').trim(), amount = parseAmount('rc-amt');
-  const type  = val('rc-type'), cat = val('rc-cat'), day = Math.min(28, int('rc-day') || 1);
+  const name      = val('rc-n').trim();
+  const amount    = parseAmount('rc-amt');
+  const type      = val('rc-type');
+  const cat       = val('rc-cat');
+  const day       = Math.min(28, int('rc-day') || 1);
   const startDate = val('rc-start') || today();
   if (!name)              { toast('Enter a name.'); return; }
   if (!amount || amount <= 0) { toast('Enter a valid amount.'); return; }
-  S.recur.push({ id: Date.now(), name, amount, type, cat, day, startDate, cur: S.cur });
-  saveAll(); renderRecur(); toast('Recurring added!');
+  lockBtn('recur-add-btn');
   setVal('rc-n', ''); setVal('rc-amt', '');
+  S.recur.push({ id: Date.now(), name, amount, type, cat, day, startDate, cur: S.cur });
+  saveAll(); renderRecur();
+  toast('✅ Recurring added!');
 }
 
 function deleteRecurring(id) {
@@ -659,33 +625,34 @@ function applyRecurring(r) {
 function renderRecur() {
   const rList = $('recur-list'), dList = $('due-list');
   const m     = selMon();
-
   if (!S.recur.length) {
     rList.innerHTML = '<div class="empty">No recurring set up.</div>';
     dList.innerHTML = '<div class="empty">Nothing due.</div>';
     return;
   }
-
   const icons = { expense: '🔁', income: '💰' };
   rList.innerHTML = S.recur.map(r => {
-    const rJson = JSON.stringify(r).replace(/"/g, '&quot;');
+    const rJson      = JSON.stringify(r).replace(/"/g, '&quot;');
+    const startLabel = r.startDate ? `From ${r.startDate} · ` : '';
     return `<div class="rec-i">
       <div class="rec-ico">${icons[r.type] || '🔁'}</div>
-      <div class="rec-inf"><div class="rec-n">${r.name}</div><div class="rec-m">${r.cat} · Day ${r.day} monthly</div></div>
-      <div class="rec-amt" style="color:${r.type === 'income' ? 'var(--inc)' : 'var(--exp)'}">${r.type === 'income' ? '+' : '-'}${fmt(r.amount)}</div>
+      <div class="rec-inf"><div class="rec-n">${r.name}</div><div class="rec-m">${r.cat} · ${startLabel}Day ${r.day} monthly</div></div>
+      <div class="rec-amt" style="color:${r.type === 'income' ? 'var(--inc)' : 'var(--exp)'}">${r.type === 'income' ? '+' : '-'}${fmt(toDisplay(r.amount, r.cur))}</div>
       <button class="btn sm" onclick="applyRecurring(${rJson})">Apply</button>
       <button class="rec-d" onclick="deleteRecurring(${r.id})">✕</button>
     </div>`;
   }).join('');
-
-  const due = S.recur.filter(r => !S.txs.find(t => t.recurId === r.id && t.date?.startsWith(m)));
+  const due = S.recur.filter(r => {
+    if (r.startDate && (m + '-01') < r.startDate.slice(0, 7) + '-01') return false;
+    return !S.txs.find(t => t.recurId === r.id && t.date?.startsWith(m));
+  });
   dList.innerHTML = due.length
     ? due.map(r => {
         const rJson = JSON.stringify(r).replace(/"/g, '&quot;');
         return `<div class="rec-i">
           <div class="rec-ico">⚠️</div>
           <div class="rec-inf"><div class="rec-n">${r.name}</div><div class="rec-m">Due day ${r.day}</div></div>
-          <div class="rec-amt" style="color:${r.type === 'income' ? 'var(--inc)' : 'var(--exp)'}">${r.type === 'income' ? '+' : '-'}${fmt(r.amount)}</div>
+          <div class="rec-amt" style="color:${r.type === 'income' ? 'var(--inc)' : 'var(--exp)'}">${r.type === 'income' ? '+' : '-'}${fmt(toDisplay(r.amount, r.cur))}</div>
           <button class="btn sm pri" onclick="applyRecurring(${rJson})">Apply now</button>
         </div>`;
       }).join('')
@@ -713,29 +680,19 @@ function addShoppingListItem() {
   $('sl-n').focus();
 }
 
-function toggleSlItem(id) {
-  const item = S.sl.find(i => i.id === id);
-  if (item) { item.done = !item.done; saveAll(); renderSl(); }
-}
-
-function deleteSlItem(id) {
-  S.sl = S.sl.filter(i => i.id !== id);
-  saveAll(); renderSl();
-}
-
+function toggleSlItem(id) { const item = S.sl.find(i => i.id === id); if (item) { item.done = !item.done; saveAll(); renderSl(); } }
+function deleteSlItem(id) { S.sl = S.sl.filter(i => i.id !== id); saveAll(); renderSl(); }
 function clearPurchased() {
   const before = S.sl.length;
   S.sl = S.sl.filter(i => !i.done);
   saveAll(); renderSl();
   if (S.sl.length === before) toast('No purchased items to clear.'); else toast('Purchased items cleared.');
 }
-
 function clearAllSl() {
   if (!S.sl.length) { toast('List is already empty.'); return; }
   if (!confirm('Clear entire shopping list?')) return;
   S.sl = []; saveAll(); renderSl(); toast('Shopping list cleared.');
 }
-
 function slItemHTML(item) {
   return `<div class="sl-i${item.done ? ' dn' : ''}">
     <div class="sl-cb${item.done ? ' on' : ''}" onclick="toggleSlItem(${item.id})">${item.done ? '✓' : ''}</div>
@@ -744,7 +701,6 @@ function slItemHTML(item) {
     <button class="tx-d" onclick="deleteSlItem(${item.id})">✕</button>
   </div>`;
 }
-
 function renderSl() {
   const el = $('sl-list');
   if (!S.sl.length) { el.innerHTML = '<div class="empty">List is empty.</div>'; return; }
@@ -757,10 +713,13 @@ function renderSl() {
 
 /* ══════════════════════════════════════════
    ACCOUNTS
+   - Opening balance → synthetic income tx
+   - Per-account currency
+   - Balance converted to display currency
 ══════════════════════════════════════════ */
 function populateAccDropdowns() {
   const opts = S.accs.length
-    ? S.accs.map(a => `<option value="${a.id}">${a.name}</option>`).join('')
+    ? S.accs.map(a => `<option value="${a.id}">${a.name}${a.cur ? ' (' + a.cur + ')' : ''}</option>`).join('')
     : '<option value="">No accounts</option>';
   ['i-acc','e-acc'].forEach(id => { if ($(id)) $(id).innerHTML = opts; });
 }
@@ -775,16 +734,19 @@ function addAccount() {
   const id = 'acc_' + Date.now();
   S.accs.push({ id, name, type, opening, cur });
   if (opening > 0) {
-    S.txs.push({ id: Date.now() + 1, type: 'income', amount: opening,
+    S.txs.push({
+      id: Date.now() + 1, type: 'income', amount: opening,
       desc: `Opening balance — ${name}`, date: today(),
-      cat: '💰 Income', btype: 'income', accId: id, cur });
+      cat: '💰 Income', btype: 'income', accId: id, cur
+    });
   }
-  saveAll(); renderAccs(); populateAccDropdowns(); renderAll(); toast('Account added!');
+  saveAll(); renderAccs(); populateAccDropdowns(); renderAll();
+  toast('Account added!');
   setVal('ac-n', ''); setVal('ac-bal', '');
 }
 
 function deleteAccount(id) {
-  if (!confirm('Delete this account?')) return;
+  if (!confirm('Delete this account? Transactions linked to it are kept but unlinked.')) return;
   S.accs = S.accs.filter(a => a.id !== id);
   saveAll(); renderAccs(); populateAccDropdowns(); toast('Account deleted.');
 }
@@ -800,19 +762,25 @@ function renderAccs() {
   const el    = $('acc-grid');
   const icons = { bank: '🏦', cash: '💵', savings: '💰', card: '💳' };
   if (!S.accs.length) { el.innerHTML = '<div class="empty" style="grid-column:1/-1">No accounts yet.</div>'; return; }
-
   const total = S.accs.reduce((s, a) => s + accBalance(a), 0);
   el.innerHTML = S.accs.map(a => {
-    const bal = accBalance(a);
+    const bal       = accBalance(a);
+    const nativeTxs = S.txs.filter(t => t.accId === a.id);
+    const nativeB   = nativeTxs.filter(isIn).reduce((s, t) => s + t.amount, 0)
+                    - nativeTxs.filter(isOut).reduce((s, t) => s + t.amount, 0);
+    const showNative = a.cur && a.cur !== S.cur;
     return `<div class="acc">
       <div class="acc-ico">${icons[a.type] || '🏦'}</div>
       <div class="acc-name">${a.name}</div>
-      <div class="acc-type">${a.type}</div>
+      <div class="acc-type">${a.type}${a.cur ? ' · ' + a.cur : ''}</div>
+      ${showNative ? `<div style="font-size:10px;color:var(--t3);margin-top:2px">${fmtCur(nativeB, a.cur)} native</div>` : ''}
       <div class="acc-bal" style="color:${bal < 0 ? 'var(--exp)' : 'var(--inc)'}">${(bal < 0 ? '-' : '') + fmt(bal)}</div>
+      <div style="font-size:9px;color:var(--t3);margin-top:3px">opening + income − expenses</div>
       <button class="tx-d" style="margin-top:6px" onclick="deleteAccount('${a.id}')">Delete</button>
     </div>`;
   }).join('') + `<div class="acc" style="border-style:dashed">
     <div class="acc-name" style="color:var(--t3)">All accounts</div>
+    <div style="font-size:10px;color:var(--t3);margin-bottom:4px">in ${S.cur}</div>
     <div class="acc-bal" style="color:${total < 0 ? 'var(--exp)' : 'var(--inc)'}">${(total < 0 ? '-' : '') + fmt(total)}</div>
   </div>`;
 }
@@ -826,46 +794,40 @@ function renderAI() {
     const mt = mTxs(), pm = S.txs.filter(t => t.date?.startsWith(prevMon()));
     const { inc, exp } = totals(mt), { inc: pi, exp: pe } = totals(pm);
     const insights = [];
-
-    // Food category comparison
-    const foodNow  = mt.filter(t => t.type === 'expense' && t.cat === '🍔 Food').reduce((s, t) => s + t.amount, 0);
-    const foodPrev = pm.filter(t => t.type === 'expense' && t.cat === '🍔 Food').reduce((s, t) => s + t.amount, 0);
+    const foodNow  = mt.filter(t => t.type === 'expense' && t.cat === '🍔 Food').reduce((s, t) => s + txAmt(t), 0);
+    const foodPrev = pm.filter(t => t.type === 'expense' && t.cat === '🍔 Food').reduce((s, t) => s + txAmt(t), 0);
     if (foodNow > 0 && foodPrev > 0) {
       const d = Math.round((foodNow - foodPrev) / foodPrev * 100);
-      insights.push(d > 0 ? `You spent ${d}% more on food vs last month (${fmt(foodNow)} vs ${fmt(foodPrev)}).` : `Food spending dropped ${Math.abs(d)}% vs last month — great discipline!`);
+      insights.push(d > 0
+        ? `You spent ${d}% more on food vs last month (${fmt(foodNow)} vs ${fmt(foodPrev)}).`
+        : `Food spending dropped ${Math.abs(d)}% vs last month — great discipline!`);
     }
-
-    // Savings rate vs last month
-    const sr  = inc  > 0 ? Math.round((inc  - exp)  / inc  * 100) : null;
-    const psr = pi   > 0 ? Math.round((pi   - pe)   / pi   * 100) : null;
+    const sr  = inc > 0 ? Math.round((inc - exp) / inc * 100) : null;
+    const psr = pi  > 0 ? Math.round((pi  - pe)  / pi  * 100) : null;
     if (sr !== null) {
       if (psr !== null) {
         const d = sr - psr;
-        insights.push(d < 0 ? `Your savings rate dropped ${Math.abs(d)}% (now ${sr}%, was ${psr}%). Try cutting Wants spending.` : `Savings rate improved ${d}% to ${sr}% — keep it up!`);
+        insights.push(d < 0
+          ? `Your savings rate dropped ${Math.abs(d)}% (now ${sr}%, was ${psr}%). Try cutting Wants spending.`
+          : `Savings rate improved ${d}% to ${sr}% — keep it up!`);
       } else {
-        insights.push(sr >= 20 ? `Savings rate is ${sr}% — above the 20% goal. Excellent!` : `Savings rate is ${sr}%. Aim for 20%+ by reducing discretionary spend.`);
+        insights.push(sr >= 20
+          ? `Savings rate is ${sr}% — above the 20% goal. Excellent!`
+          : `Savings rate is ${sr}%. Aim for 20%+ by reducing discretionary spend.`);
       }
     }
-
-    // Top spending category
     const catMap = {};
-    mt.filter(t => t.type === 'expense').forEach(t => { catMap[t.cat] = (catMap[t.cat] || 0) + t.amount; });
+    mt.filter(t => t.type === 'expense').forEach(t => { catMap[t.cat] = (catMap[t.cat] || 0) + txAmt(t); });
     const topCat = Object.entries(catMap).sort((a, b) => b[1] - a[1])[0];
     if (topCat) {
       const pct = exp > 0 ? Math.round(topCat[1] / exp * 100) : 0;
       insights.push(`${topCat[0]} is your top expense at ${fmt(topCat[1])} (${pct}% of total spending this month).`);
     }
-
-    // Overspending alert
     if (exp > inc && inc > 0) insights.push('⚠️ Spending exceeds income this month. Review your Wants category to find savings.');
     else if (inc > 0) insights.push(`You are net positive ${fmt(inc - exp)} this month. Well done!`);
-
-    // Recurring reminder
     const due = S.recur.filter(r => !S.txs.find(t => t.recurId === r.id && t.date?.startsWith(selMon())));
     if (due.length) insights.push(`${due.length} recurring transaction${due.length > 1 ? 's' : ''} not yet applied this month: ${due.map(r => r.name).join(', ')}.`);
-
     if (!insights.length) insights.push('Add more transactions this month to unlock personalised AI insights.');
-
     $('ai-body').innerHTML = insights.map(i => `<div class="ai-item"><div class="ai-dot"></div><div>${i}</div></div>`).join('');
     renderCmp();
   }, 400);
@@ -877,12 +839,15 @@ function renderCmp() {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     mons.push({ l: d.toLocaleString('en', { month: 'short' }), y: d.getFullYear(), m: d.getMonth() });
   }
-  const mE = mons.map(mo => S.txs.filter(t => t.type === 'expense' && new Date(t.date).getMonth() === mo.m && new Date(t.date).getFullYear() === mo.y).reduce((s, t) => s + t.amount, 0));
-  const mI = mons.map(mo => S.txs.filter(t => t.type === 'income'  && new Date(t.date).getMonth() === mo.m && new Date(t.date).getFullYear() === mo.y).reduce((s, t) => s + t.amount, 0));
+  const mE = mons.map(mo => S.txs.filter(t => t.type === 'expense' && new Date(t.date).getMonth() === mo.m && new Date(t.date).getFullYear() === mo.y).reduce((s, t) => s + txAmt(t), 0));
+  const mI = mons.map(mo => S.txs.filter(t => t.type === 'income'  && new Date(t.date).getMonth() === mo.m && new Date(t.date).getFullYear() === mo.y).reduce((s, t) => s + txAmt(t), 0));
   if (cmpC) cmpC.destroy();
   cmpC = new Chart($('cmpChart'), {
     type: 'bar',
-    data: { labels: mons.map(m => m.l), datasets: [{ label: 'Income', data: mI, backgroundColor: '#9fe1cb', borderRadius: 3 }, { label: 'Expenses', data: mE, backgroundColor: '#f5c4b3', borderRadius: 3 }] },
+    data: { labels: mons.map(m => m.l), datasets: [
+      { label: 'Income',   data: mI, backgroundColor: '#9fe1cb', borderRadius: 3 },
+      { label: 'Expenses', data: mE, backgroundColor: '#f5c4b3', borderRadius: 3 }
+    ]},
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#888780' } }, y: { ticks: { callback: v => S.cur + v, font: { size: 10 }, color: '#888780' }, grid: { color: 'rgba(128,128,128,.1)' } } } }
   });
 }
@@ -892,14 +857,15 @@ function renderCmp() {
 ══════════════════════════════════════════ */
 function exportCSV() {
   if (!S.txs.length) { toast('No transactions to export.'); return; }
-  const rows = [['Date','Description','Category','Type','Amount','Currency','Account','Budget type']];
+  const rows = [['Date','Description','Category','Type','Amount (native)','Native currency','Amount (display)','Display currency','Account','Budget type']];
   [...S.txs].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
     rows.push([
       t.date,
       `"${(t.desc || '').replace(/"/g, '""')}"`,
-      t.cat || '',
-      t.type,
+      t.cat || '', t.type,
       (isIn(t) ? '' : '-') + t.amount.toFixed(2),
+      t.cur || S.cur,
+      (isIn(t) ? '' : '-') + txAmt(t).toFixed(2),
       S.cur,
       accName(t.accId) || '',
       t.btype || ''
@@ -916,23 +882,16 @@ function exportCSV() {
 
 /* ══════════════════════════════════════════
    PWA — SERVICE WORKER & INSTALL PROMPT
-   Handles both iOS Safari and Android Chrome
 ══════════════════════════════════════════ */
 let _installPrompt = null;
 
-/* ── Service Worker registration ── */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js', { scope: './' })
-      .then(reg => {
-        // Check for updates every time the app loads
-        reg.update();
-      })
-      .catch(() => {});
+      .then(reg => reg.update()).catch(() => {});
   });
 }
 
-/* ── Android / Chrome: native install prompt ── */
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   _installPrompt = e;
@@ -959,13 +918,6 @@ window.addEventListener('appinstalled', () => {
   toast('Monetrax installed!');
 });
 
-/* ── iOS Safari: show "Add to Home Screen" nudge ──
-   iOS does not fire beforeinstallprompt — we detect Safari manually.
-   We only show the nudge when:
-     1. Running in Safari (not already installed as standalone)
-     2. On iOS / iPadOS
-     3. Not already dismissed this session
-── */
 (function checkiOSInstall() {
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -973,43 +925,21 @@ window.addEventListener('appinstalled', () => {
                        window.matchMedia('(display-mode: standalone)').matches;
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   const nudge = $('ios-nudge');
-
   if (nudge && isIOS && isSafari && !isStandalone) {
-    // Small delay so the app paints first
     setTimeout(() => { nudge.style.display = 'flex'; }, 1200);
   }
 })();
-
-function updateTransferAccDropdown() {
-  const type = val('t-type');
-  const wrap = $('t-acc-wrap');
-  if (!wrap) return;
-  if (type === 'adde') {
-    wrap.style.display = 'block';
-    const sel = $('t-acc-sel');
-    if (sel) sel.innerHTML = S.accs.length
-      ? S.accs.map(a => `<option value="${a.id}">${a.name}${a.cur ? ' (' + a.cur + ')' : ''}</option>`).join('')
-      : '<option value="">No accounts yet</option>';
-  } else {
-    wrap.style.display = 'none';
-  }
-}
 
 /* ══════════════════════════════════════════
    EVENT WIRING
 ══════════════════════════════════════════ */
 function wireEvents() {
-  // Sidebar toggle
-  $('sb-toggle').addEventListener('click', () => {
-    S.sbOpen = !S.sbOpen; saveAll(); applySidebar();
-  });
+  $('sb-toggle').addEventListener('click', () => { S.sbOpen = !S.sbOpen; saveAll(); applySidebar(); });
 
-  // Navigation — delegate to all nav buttons
   document.querySelectorAll('.ni[data-page]').forEach(btn => {
     btn.addEventListener('click', () => navigate(btn.dataset.page));
   });
 
-  // Add-transaction tabs
   document.querySelectorAll('.at[data-tab]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.at').forEach(b => b.classList.remove('act'));
@@ -1019,67 +949,56 @@ function wireEvents() {
     });
   });
 
-  // Dark mode
-  $('dark-btn').addEventListener('click', () => {
-    S.isDark = !S.isDark; saveAll(); applyTheme(); renderAll();
-  });
-
-  // Currency
-  $('cur-sel').addEventListener('change', () => {
-    S.cur = $('cur-sel').value; saveAll(); renderAll();
-  });
-
-  // Export buttons
-  $('export-btn').addEventListener('click',    exportCSV);
+  $('dark-btn').addEventListener('click', () => { S.isDark = !S.isDark; saveAll(); applyTheme(); renderAll(); });
+  $('cur-sel').addEventListener('change', () => { S.cur = $('cur-sel').value; saveAll(); destroyCharts(); renderAll(); });
+  $('export-btn').addEventListener('click', exportCSV);
   $('hist-export-btn').addEventListener('click', exportCSV);
-
-  // Month change
   $('msel').addEventListener('change', renderAll);
 
-  // Chart type toggle
   $('ct-bar').addEventListener('click',  () => { S.chartType = 'bar';  saveAll(); $('ct-bar').classList.add('act'); $('ct-line').classList.remove('act'); if (trendC) { trendC.destroy(); trendC = null; } renderTrend(); });
   $('ct-line').addEventListener('click', () => { S.chartType = 'line'; saveAll(); $('ct-line').classList.add('act'); $('ct-bar').classList.remove('act'); if (trendC) { trendC.destroy(); trendC = null; } renderTrend(); });
 
-  // History search + clear
   $('h-search').addEventListener('input', renderHist);
   $('clear-month-btn').addEventListener('click', clearMonthTxs);
 
-  // Income form
+  /* Income */
   $('add-inc-btn').addEventListener('click', addIncome);
+  setVal('i-date', today());
   fixDecimalInput($('i-amt'));
-  $('i-date').value = today();
 
-  // Expense form
+  /* Expense */
   $('add-exp-btn').addEventListener('click', addExpense);
+  setVal('e-date', today());
   fixDecimalInput($('e-amt'));
-  $('e-date').value = today();
 
-  // Transfer form
+  /* Transfer */
   $('add-trf-btn').addEventListener('click', addTransfer);
   $('t-amt').addEventListener('input', updateTransferPreview);
   $('t-name').addEventListener('input', updateTransferPreview);
   $('t-type').addEventListener('change', () => { updateTransferPreview(); updateTransferAccDropdown(); });
-  $('t-date').value = today();
+  setVal('t-date', today());
+  fixDecimalInput($('t-amt'));
 
-  // Shopping cart
+  /* Shopping cart */
   $('cart-add-btn').addEventListener('click', addCartItem);
-  fixDecimalInput($('sh-p'));
-  fixDecimalInput($('sh-cap'));
   $('sh-n').addEventListener('keydown', e => { if (e.key === 'Enter') addCartItem(); });
   $('sh-p').addEventListener('keydown', e => { if (e.key === 'Enter') addCartItem(); });
   $('sh-cap').addEventListener('input', renderCart);
   $('cart-clear-btn').addEventListener('click', clearCart);
   $('cart-checkout-btn').addEventListener('click', checkoutCart);
-  $('sh-date').value = today();
+  setVal('sh-date', today());
+  fixDecimalInput($('sh-p'));
+  fixDecimalInput($('sh-cap'));
 
-  // Recurring
+  /* Recurring */
   $('recur-add-btn').addEventListener('click', addRecurring);
   fixDecimalInput($('rc-amt'));
 
-  // Budget
+  /* Budget */
   $('b-inc').addEventListener('input', renderBudget);
+  fixDecimalInput($('b-inc'));
 
-  // Shopping list
+  /* Shopping list */
   $('sl-add-btn').addEventListener('click', addShoppingListItem);
   $('sl-n').addEventListener('input', hideDupWarn);
   $('sl-n').addEventListener('keydown', e => { if (e.key === 'Enter') addShoppingListItem(); });
@@ -1087,24 +1006,22 @@ function wireEvents() {
   $('sl-done-btn').addEventListener('click', clearPurchased);
   $('sl-all-btn').addEventListener('click', clearAllSl);
 
-  // Accounts
+  /* Accounts */
   $('acc-add-btn').addEventListener('click', addAccount);
   fixDecimalInput($('ac-bal'));
 
-  // Autocomplete bindings
+  /* Autocomplete */
   bindCombo('i-src', 'incSrcs');
   bindCombo('e-dsc', 'expDscs');
   bindCombo('sh-n',  'prods');
   bindCombo('sl-n',  'prods');
 
-  // Close sidebar on outside click (mobile)
+  /* Close sidebar on outside tap (mobile) */
   document.addEventListener('click', e => {
     if (window.innerWidth <= 640 && S.sbOpen && !$('sb').contains(e.target) && !$('sb-toggle').contains(e.target)) {
       S.sbOpen = false; saveAll(); applySidebar();
     }
   });
-  fixDecimalInput($('t-amt'));
-  fixDecimalInput($('b-inc'));
 }
 
 /* ══════════════════════════════════════════
@@ -1113,7 +1030,7 @@ function wireEvents() {
 (function init() {
   loadState();
   buildMonths();
-  $('cur-sel').value = S.cur;
+  setVal('cur-sel', S.cur);
   if (S.isDark) applyTheme();
   applySidebar();
   $('ct-bar').classList.toggle('act',  S.chartType === 'bar');
