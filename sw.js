@@ -1,5 +1,5 @@
 /* ── Monetrax Service Worker ── */
-const CACHE_NAME = 'monetrax-v2';
+const CACHE_NAME = 'monetrax-v3';
 
 /* All assets to pre-cache on install */
 const PRECACHE = [
