@@ -32,16 +32,23 @@ const PRECACHE = [
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'
 ];
 
-/* Install: pre-cache everything */
+/* ── INSTALL ─────────────────────────────────────────────
+   Pre-cache all assets.
+   Does NOT call skipWaiting() here — the new SW waits
+   until the user clicks "Update App", which sends a
+   SKIP_WAITING message (handled at the bottom of this file).
+──────────────────────────────────────────────────────── */
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(PRECACHE))
-      .then(() => self.skipWaiting())
   );
 });
 
-/* Activate: remove stale caches */
+/* ── ACTIVATE ────────────────────────────────────────────
+   Remove stale caches from old versions, then claim all
+   open clients so the new SW takes control immediately.
+──────────────────────────────────────────────────────── */
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
@@ -52,7 +59,11 @@ self.addEventListener('activate', event => {
   );
 });
 
-/* Fetch: cache-first for same-origin; network-first for CDN */
+/* ── FETCH ───────────────────────────────────────────────
+   CDN assets  → network-first, fall back to cache
+   Same-origin → cache-first, fall back to network,
+                 then offline fallback (index.html)
+──────────────────────────────────────────────────────── */
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
@@ -85,5 +96,18 @@ self.addEventListener('fetch', event => {
             .catch(() => caches.match('./index.html'));
         })
     );
+  }
+});
+
+/* ── MESSAGE ─────────────────────────────────────────────
+   The "Update App" button in the settings panel sends
+   { type: 'SKIP_WAITING' } to this SW.
+   Calling skipWaiting() here triggers the activate event,
+   which calls clients.claim(), which triggers the
+   controllerchange listener in app.js → page reloads.
+──────────────────────────────────────────────────────── */
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
 });

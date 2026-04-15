@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="auto">
 <head>
   <base href="/Monetarx/">
   <meta charset="UTF-8" />
@@ -27,25 +27,17 @@
   <link rel="apple-touch-icon" sizes="120x120"        href="icons/apple-touch-120.png" />
   <link rel="apple-touch-icon" sizes="76x76"          href="icons/apple-touch-76.png"  />
 
-  <!-- ── iOS: Splash screens (must be linked — Safari shows these on launch) ── -->
-  <!-- iPhone 14 Pro Max -->
+  <!-- ── iOS: Splash screens ── -->
   <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1284x2778.png" />
-  <!-- iPhone 14 / 13 / 12 -->
   <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1170x2532.png" />
-  <!-- iPhone X / 11 Pro / XS -->
   <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1125x2436.png" />
-  <!-- iPhone 8 / SE 2nd gen -->
   <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-750x1334.png" />
-  <!-- iPhone SE 1st gen -->
   <link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-640x1136.png" />
-  <!-- iPad Pro 12.9" -->
   <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-2048x2732.png" />
-  <!-- iPad Pro 11" -->
   <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-1668x2388.png" />
-  <!-- iPad Air / Mini -->
   <link rel="apple-touch-startup-image" media="screen and (device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-1536x2048.png" />
 
-  <!-- ── FAVICON (browser tab) ── -->
+  <!-- ── FAVICON ── -->
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
   <link rel="icon" type="image/png" sizes="32x32"   href="icons/icon-48.png"  />
   <link rel="shortcut icon"                          href="icons/icon-192.png" />
@@ -75,7 +67,7 @@
 
     <div class="sb-nav">
       <div class="nav-grp">Main</div>
-      <button class="ni act" data-page="dash"   title="Dashboard">
+      <button class="ni act" data-page="dash" title="Dashboard">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
         <span class="ni-lbl">Dashboard</span><span class="ni-tip">Dashboard</span>
       </button>
@@ -133,7 +125,14 @@
   <!-- ══ MAIN ══ -->
   <div class="main" style="position:relative">
 
-    <!-- iOS "Add to Home Screen" nudge — shown only in Safari, not standalone -->
+    <!-- ── Update available banner ── -->
+    <div class="update-banner" id="update-banner" style="display:none" role="alert">
+      <span>🎉 New version available!</span>
+      <button id="update-now-btn">Update now</button>
+      <button id="update-dismiss-btn" aria-label="Dismiss">×</button>
+    </div>
+
+    <!-- iOS "Add to Home Screen" nudge -->
     <div class="ios-nudge" id="ios-nudge">
       <img src="icons/apple-touch-120.png" style="width:28px;height:28px;border-radius:7px" alt="" />
       <span>To install: tap <strong>Share</strong> → <strong>Add to Home Screen</strong></span>
@@ -148,6 +147,7 @@
       <button onclick="document.getElementById('install-banner').style.display='none'" aria-label="Dismiss">×</button>
     </div>
 
+    <!-- ── Topbar ── -->
     <div class="topbar">
       <div class="tb-l">
         <button class="icon-btn" id="sb-toggle" aria-label="Toggle navigation">
@@ -171,13 +171,22 @@
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v9M5 8l3 3 3-3M2 13h12"/></svg>
           <span class="btn-lbl">Export</span>
         </button>
-        <button class="icon-btn" id="dark-btn">
+        <button class="icon-btn" id="dark-btn" aria-label="Toggle theme">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" id="dark-ic"><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/><circle cx="8" cy="8" r="3"/></svg>
           <span class="btn-lbl" id="dark-lbl">Dark</span>
+        </button>
+        <!-- Settings gear button -->
+        <button class="icon-btn" id="settings-btn" aria-label="Settings">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <circle cx="8" cy="8" r="2.5"/>
+            <path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3.1 3.1l1.1 1.1M11.8 11.8l1.1 1.1M3.1 12.9l1.1-1.1M11.8 4.2l1.1-1.1"/>
+          </svg>
+          <span class="btn-lbl">Settings</span>
         </button>
       </div>
     </div>
 
+    <!-- ── Content ── -->
     <div class="content">
 
       <!-- DASHBOARD -->
@@ -216,7 +225,7 @@
         <div id="ap-inc" class="ap act">
           <div class="card">
             <div class="fg fg2">
-              <div class="fld"><label>Amount</label><input type="text" inputmode="decimal" id="i-amt" placeholder="0,00" min="0" step="0.01" inputmode="decimal" /></div>
+              <div class="fld"><label>Amount</label><input type="text" inputmode="decimal" id="i-amt" placeholder="0,00" /></div>
               <div class="fld"><label>Source</label><div class="cw-inp"><input type="text" id="i-src" placeholder="e.g. Salary" autocomplete="off" /><span class="cw-arr">▾</span><div class="sugg" id="i-src-s"></div></div></div>
             </div>
             <div class="fg fg3">
@@ -229,7 +238,7 @@
         <div id="ap-exp" class="ap">
           <div class="card">
             <div class="fg fg3">
-              <div class="fld"><label>Amount</label><input type="text" inputmode="decimal" id="e-amt" placeholder="0,00" min="0" step="0.01" inputmode="decimal" /></div>
+              <div class="fld"><label>Amount</label><input type="text" inputmode="decimal" id="e-amt" placeholder="0,00" /></div>
               <div class="fld"><label>Description</label><div class="cw-inp"><input type="text" id="e-dsc" placeholder="e.g. Aldi" autocomplete="off" /><span class="cw-arr">▾</span><div class="sugg" id="e-dsc-s"></div></div></div>
               <div class="fld"><label>Category</label>
                 <select id="e-cat"><option>🏠 Housing</option><option>🍔 Food</option><option>🚗 Transport</option><option>💊 Health</option><option>🎮 Entertainment</option><option>👗 Clothing</option><option>📚 Education</option><option>💡 Utilities</option><option>✈️ Travel</option><option>🛒 Shopping</option><option>📦 Other</option></select>
@@ -247,7 +256,7 @@
           <div class="card" style="border-color:#b5d4f4">
             <p style="font-size:11px;color:var(--t3);margin-bottom:9px"><span style="color:var(--inc);font-weight:500">Received / Added</span> → balance ↑ &nbsp;·&nbsp; <span style="color:var(--exp);font-weight:500">Sent</span> → balance ↓</p>
             <div class="fg fg2">
-              <div class="fld"><label>Amount</label><input type="text" inputmode="decimal" id="t-amt" placeholder="0,00" min="0" step="0.01" inputmode="decimal" /></div>
+              <div class="fld"><label>Amount</label><input type="text" inputmode="decimal" id="t-amt" placeholder="0,00" /></div>
               <div class="fld"><label>Person / Name</label><input type="text" id="t-name" placeholder="e.g. John or bank name" /></div>
             </div>
             <div class="fg fg2">
@@ -289,12 +298,12 @@
           <div class="card-h">Add item</div>
           <div style="display:flex;gap:8px;margin-bottom:9px;align-items:flex-end;flex-wrap:wrap">
             <div class="fld" style="flex:1;min-width:120px"><label>Product</label><div class="cw-inp"><input type="text" id="sh-n" placeholder="e.g. Milk" autocomplete="off" /><span class="cw-arr">▾</span><div class="sugg" id="sh-n-s"></div></div></div>
-            <div class="fld" style="flex:0 0 100px"><label>Price/unit</label><input type="text" inputmode="decimal" id="sh-p" placeholder="0,00" min="0" step="0.01" inputmode="decimal" /></div>
-            <div class="fld" style="flex:0 0 64px"><label>Qty</label><input type="text" inputmode="decimal" id="sh-q" value="1" min="1" inputmode="numeric" /></div>
+            <div class="fld" style="flex:0 0 100px"><label>Price/unit</label><input type="text" inputmode="decimal" id="sh-p" placeholder="0,00" /></div>
+            <div class="fld" style="flex:0 0 64px"><label>Qty</label><input type="text" inputmode="numeric" id="sh-q" value="1" /></div>
             <div style="padding-bottom:1px"><button class="btn pri" id="cart-add-btn">Add</button></div>
           </div>
           <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
-            <div class="fld" style="flex:0 0 155px"><label>Budget cap (optional)</label><input type="text" inputmode="decimal" id="sh-cap" placeholder="e.g. 60" min="0" step="0.01" inputmode="decimal" /></div>
+            <div class="fld" style="flex:0 0 155px"><label>Budget cap (optional)</label><input type="text" inputmode="decimal" id="sh-cap" placeholder="e.g. 60" /></div>
             <div style="padding-bottom:1px"><button class="btn sm del" id="cart-clear-btn">Clear cart</button></div>
           </div>
         </div>
@@ -319,12 +328,12 @@
           <div class="card-h">Add recurring transaction</div>
           <div class="fg fg3">
             <div class="fld"><label>Name</label><input type="text" id="rc-n" placeholder="e.g. Rent, Netflix" /></div>
-            <div class="fld"><label>Amount</label><input type="text" inputmode="decimal" id="rc-amt" placeholder="0,00" min="0" step="0.01" inputmode="decimal" /></div>
+            <div class="fld"><label>Amount</label><input type="text" inputmode="decimal" id="rc-amt" placeholder="0,00" /></div>
             <div class="fld"><label>Type</label><select id="rc-type"><option value="expense">Expense</option><option value="income">Income</option></select></div>
           </div>
           <div class="fg fg4">
             <div class="fld"><label>Category</label><select id="rc-cat"><option>🏠 Housing</option><option>🍔 Food</option><option>💡 Utilities</option><option>🚗 Transportation</option><option>🎮 Entertainment</option><option>💊 Health</option><option>📚 Education</option><option>💰 Income</option><option>📦 Other</option></select></div>
-            <div class="fld"><label>Day of month</label><input type="text" inputmode="decimal" id="rc-day" placeholder="1–28" min="1" max="28" value="1" inputmode="numeric" /></div>
+            <div class="fld"><label>Day of month</label><input type="text" inputmode="numeric" id="rc-day" placeholder="1–28" value="1" /></div>
             <div class="fld" style="display:flex;align-items:flex-end"><button class="btn pri" id="recur-add-btn" style="width:100%">Add recurring</button></div>
             <div class="fld"><label>Start date</label><input type="date" id="rc-start" /></div>
           </div>
@@ -337,7 +346,7 @@
       <section id="s-budget" class="screen">
         <div class="card">
           <div class="card-h">50 / 30 / 20 rule</div>
-          <div class="fld" style="margin-bottom:10px"><label>Income target — leave blank to use logged income</label><input type="text" inputmode="decimal" id="b-inc" placeholder="Monthly income" inputmode="decimal" /></div>
+          <div class="fld" style="margin-bottom:10px"><label>Income target — leave blank to use logged income</label><input type="text" inputmode="decimal" id="b-inc" placeholder="Monthly income" /></div>
           <div id="b-bars"></div>
           <div class="rc" id="b-rule"></div>
         </div>
@@ -404,6 +413,62 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div><!-- main -->
 </div><!-- shell -->
+
+<!-- ══ SETTINGS PANEL ══ -->
+<!-- Overlay: clicking it closes the panel -->
+<div class="settings-overlay" id="settings-overlay" aria-hidden="true"></div>
+
+<!-- Drawer panel sliding in from the right -->
+<div class="settings-panel" id="settings-panel" role="dialog" aria-label="Settings">
+
+  <!-- Header -->
+  <div class="sp-head">
+    <div class="sp-title">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:14px;height:14px;vertical-align:middle;margin-right:6px"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3.1 3.1l1.1 1.1M11.8 11.8l1.1 1.1M3.1 12.9l1.1-1.1M11.8 4.2l1.1-1.1"/></svg>Settings
+    </div>
+    <button class="icon-btn" id="settings-close" aria-label="Close settings">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>
+    </button>
+  </div>
+
+  <!-- Section: Appearance -->
+  <div class="sp-section">
+    <div class="sp-label">Appearance</div>
+    <div class="theme-btns">
+      <button id="theme-light" class="theme-btn" aria-label="Light mode">
+        <span class="ti">☀️</span>Light
+      </button>
+      <button id="theme-dark" class="theme-btn" aria-label="Dark mode">
+        <span class="ti">🌙</span>Dark
+      </button>
+      <button id="theme-auto" class="theme-btn act" aria-label="Automatic theme">
+        <span class="ti">⚙️</span>Auto
+      </button>
+    </div>
+    <div class="sp-hint">Auto follows your device's system setting and switches automatically.</div>
+  </div>
+
+  <!-- Section: App updates -->
+  <div class="sp-section">
+    <div class="sp-label">App Updates</div>
+    <button class="btn pri" id="update-app-btn" style="width:100%;justify-content:center;gap:7px">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:13px;height:13px"><path d="M1 8a7 7 0 1 0 7-7"/><path d="M4 1l4 4-4 4"/></svg>
+      Update App
+    </button>
+    <div class="sp-hint">Checks for the latest version and reloads if an update is available. Your data is never affected.</div>
+  </div>
+
+  <!-- Section: About -->
+  <div class="sp-section" style="border-bottom:none">
+    <div class="sp-label">About</div>
+    <div style="font-size:12px;color:var(--t2);line-height:1.6">
+      <strong>Monetrax</strong><br/>
+      Track Smarter. Live Better.<br/>
+      <span style="color:var(--t3);font-size:10px">Data stored locally · Works offline · Private</span>
+    </div>
+  </div>
+
+</div><!-- settings-panel -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="app.js"></script>

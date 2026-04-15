@@ -39,7 +39,7 @@ function fmtCur(amount, cur) {
 /* ── STATE ── */
 const S = {
   txs: [], cart: [], sl: [], recur: [], accs: [],
-  lists: {}, isDark: false, sbOpen: false, cur: '€', chartType: 'bar'
+  lists: {}, theme: 'auto', sbOpen: false, cur: '€', chartType: 'bar'
 };
 
 /* ── PERSISTENCE ── */
@@ -51,10 +51,24 @@ function loadState() {
   try { S.sl     = JSON.parse(LS.getItem('mtx_sl')    || '[]'); } catch (_) {}
   try { S.recur  = JSON.parse(LS.getItem('mtx_recur') || '[]'); } catch (_) {}
   try { S.accs   = JSON.parse(LS.getItem('mtx_accs')  || '[]'); } catch (_) {}
-  try { S.isDark = JSON.parse(LS.getItem('mtx_dark')  || 'false'); } catch (_) {}
   try { S.sbOpen = JSON.parse(LS.getItem('mtx_sb')    || 'false'); } catch (_) {}
   S.cur       = LS.getItem('mtx_cur') || '€';
   S.chartType = LS.getItem('mtx_ct')  || 'bar';
+
+  /* ── Theme: read new key first, fall back to legacy isDark ── */
+  const savedTheme = LS.getItem('mtx_theme');
+  if (savedTheme && ['light','dark','auto'].includes(savedTheme)) {
+    S.theme = savedTheme;
+  } else {
+    /* Migrate from old boolean isDark */
+    try {
+      const wasDark = JSON.parse(LS.getItem('mtx_dark') || 'false');
+      S.theme = wasDark ? 'dark' : 'light';
+    } catch (_) {
+      S.theme = 'auto';
+    }
+  }
+
   let saved = {};
   try { saved = JSON.parse(LS.getItem('mtx_lists') || '{}'); } catch (_) {}
   Object.keys(DEFAULTS).forEach(k => {
@@ -68,10 +82,10 @@ function saveAll() {
   LS.setItem('mtx_sl',    JSON.stringify(S.sl));
   LS.setItem('mtx_recur', JSON.stringify(S.recur));
   LS.setItem('mtx_accs',  JSON.stringify(S.accs));
-  LS.setItem('mtx_dark',  S.isDark);
   LS.setItem('mtx_sb',    S.sbOpen);
   LS.setItem('mtx_cur',   S.cur);
   LS.setItem('mtx_ct',    S.chartType);
+  LS.setItem('mtx_theme', S.theme);
   const custom = {};
   Object.keys(DEFAULTS).forEach(k => {
     custom[k] = S.lists[k].filter(i => !DEFAULTS[k].includes(i));
@@ -169,14 +183,81 @@ function lockBtn(id, ms) {
   setTimeout(() => { el.disabled = false; el.style.opacity = ''; }, ms || 2000);
 }
 
-/* ── DARK MODE ── */
+/* ══════════════════════════════════════════
+   THEME SYSTEM
+   Three modes: 'light' | 'dark' | 'auto'
+   • light / dark → sets data-theme directly
+   • auto         → sets data-theme="auto", CSS media query
+                    handles rendering; JS re-renders charts
+                    when system preference changes.
+══════════════════════════════════════════ */
+let _autoMQ = null;
+
+function _autoMQCb() {
+  /* System theme changed while in auto mode — redraw charts */
+  destroyCharts();
+  renderAll();
+  _syncTopbarDarkBtn();
+}
+
 function applyTheme() {
-  document.documentElement.setAttribute('data-theme', S.isDark ? 'dark' : 'light');
-  $('dark-lbl').textContent = S.isDark ? 'Light' : 'Dark';
-  $('dark-ic').innerHTML = S.isDark
+  /* Remove previous auto listener if any */
+  if (_autoMQ) {
+    try { _autoMQ.removeEventListener('change', _autoMQCb); } catch (_) {}
+    _autoMQ = null;
+  }
+
+  document.documentElement.setAttribute('data-theme', S.theme);
+
+  if (S.theme === 'auto') {
+    _autoMQ = window.matchMedia('(prefers-color-scheme: dark)');
+    try { _autoMQ.addEventListener('change', _autoMQCb); } catch (_) {}
+  }
+
+  _syncTopbarDarkBtn();
+  _syncSettingsThemeBtns();
+  destroyCharts();
+}
+
+/* Keep the topbar dark/light toggle button in sync */
+function _syncTopbarDarkBtn() {
+  const resolvedDark =
+    S.theme === 'dark' ||
+    (S.theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+  const lbl = $('dark-lbl');
+  const ic  = $('dark-ic');
+  if (lbl) lbl.textContent = resolvedDark ? 'Light' : 'Dark';
+  if (ic) ic.innerHTML = resolvedDark
     ? '<path d="M13 8a5 5 0 1 1-5-5 3.5 3.5 0 0 0 5 5z"/>'
     : '<path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/><circle cx="8" cy="8" r="3"/>';
-  destroyCharts();
+}
+
+/* Highlight the active button in the settings panel */
+function _syncSettingsThemeBtns() {
+  ['light','dark','auto'].forEach(t => {
+    const btn = $('theme-' + t);
+    if (btn) btn.classList.toggle('act', S.theme === t);
+  });
+}
+
+/* Called from settings panel buttons */
+function setTheme(t) {
+  S.theme = t;
+  saveAll();
+  applyTheme();
+  renderAll();
+}
+
+/* ── SETTINGS PANEL ── */
+function openSettings() {
+  $('settings-panel').classList.add('open');
+  $('settings-overlay').classList.add('open');
+  _syncSettingsThemeBtns();
+}
+function closeSettings() {
+  $('settings-panel').classList.remove('open');
+  $('settings-overlay').classList.remove('open');
 }
 
 /* ── CHARTS ── */
@@ -422,8 +503,6 @@ function renderCats() {
 
 /* ══════════════════════════════════════════
    ADD INCOME
-   Fields clear immediately so user sees the form reset.
-   Button locks for 2s to prevent double-tap.
 ══════════════════════════════════════════ */
 function addIncome() {
   const amount = parseAmount('i-amt'), source = val('i-src').trim();
@@ -588,8 +667,6 @@ function checkoutCart() {
 
 /* ══════════════════════════════════════════
    RECURRING
-   - Transportation category
-   - Start date field
 ══════════════════════════════════════════ */
 function addRecurring() {
   const name      = val('rc-n').trim();
@@ -713,9 +790,6 @@ function renderSl() {
 
 /* ══════════════════════════════════════════
    ACCOUNTS
-   - Opening balance → synthetic income tx
-   - Per-account currency
-   - Balance converted to display currency
 ══════════════════════════════════════════ */
 function populateAccDropdowns() {
   const opts = S.accs.length
@@ -881,17 +955,95 @@ function exportCSV() {
 }
 
 /* ══════════════════════════════════════════
-   PWA — SERVICE WORKER & INSTALL PROMPT
+   PWA — SERVICE WORKER & UPDATE SYSTEM
 ══════════════════════════════════════════ */
-let _installPrompt = null;
+let _swReg          = null;
+let _installPrompt  = null;
 
-if ('serviceWorker' in navigator) {
+/* Show the "New version available" banner */
+function showUpdateBanner() {
+  const el = $('update-banner');
+  if (el) el.style.display = 'flex';
+}
+function hideUpdateBanner() {
+  const el = $('update-banner');
+  if (el) el.style.display = 'none';
+}
+
+/* Called by the "Update App" button in the settings panel
+   and also by the banner's own "Update now" button.        */
+function updateApp() {
+  const btn = $('update-app-btn');
+  if (btn) { btn.textContent = 'Updating…'; btn.disabled = true; }
+
+  function doSkipWaiting(reg) {
+    /* Tell the waiting SW to take over — controllerchange
+       listener below will then reload the page.            */
+    reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+  }
+
+  if (_swReg) {
+    if (_swReg.waiting) {
+      doSkipWaiting(_swReg);
+    } else {
+      /* No update waiting: ask the browser to check now */
+      _swReg.update().then(() => {
+        if (_swReg.waiting) {
+          doSkipWaiting(_swReg);
+        } else {
+          toast('✅ Already on the latest version!');
+          if (btn) { btn.textContent = '🔄 Update App'; btn.disabled = false; }
+        }
+      }).catch(() => {
+        /* Offline or fetch failed — hard reload as fallback */
+        window.location.reload(true);
+      });
+    }
+  } else {
+    window.location.reload(true);
+  }
+}
+
+function initServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js', { scope: './' })
-      .then(reg => reg.update()).catch(() => {});
+      .then(reg => {
+        _swReg = reg;
+
+        /* A new SW is already waiting (user came back after deploy) */
+        if (reg.waiting) showUpdateBanner();
+
+        /* Listen for a new SW installing after this page load */
+        reg.addEventListener('updatefound', () => {
+          const incoming = reg.installing;
+          if (!incoming) return;
+          incoming.addEventListener('statechange', () => {
+            if (incoming.state === 'installed' && navigator.serviceWorker.controller) {
+              /* New version is ready and waiting */
+              showUpdateBanner();
+              toast('🎉 New version available — tap Update App!');
+            }
+          });
+        });
+
+        /* Periodically check for updates in the background */
+        setInterval(() => reg.update(), 60 * 60 * 1000); // every hour
+      })
+      .catch(() => { /* SW unavailable — app still works */ });
+
+    /* When the new SW takes control, reload once to get fresh files */
+    let _reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (_reloading) return;
+      _reloading = true;
+      window.location.reload();
+    });
   });
 }
 
+/* ── INSTALL PROMPT (Android) ── */
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   _installPrompt = e;
@@ -918,6 +1070,7 @@ window.addEventListener('appinstalled', () => {
   toast('Monetrax installed!');
 });
 
+/* ── iOS INSTALL NUDGE ── */
 (function checkiOSInstall() {
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -949,7 +1102,29 @@ function wireEvents() {
     });
   });
 
-  $('dark-btn').addEventListener('click', () => { S.isDark = !S.isDark; saveAll(); applyTheme(); renderAll(); });
+  /* Topbar dark toggle — switches between light ↔ dark only
+     (use Settings panel for Auto mode)                       */
+  $('dark-btn').addEventListener('click', () => {
+    const resolvedDark =
+      S.theme === 'dark' ||
+      (S.theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    S.theme = resolvedDark ? 'light' : 'dark';
+    saveAll(); applyTheme(); renderAll();
+  });
+
+  /* Settings panel */
+  $('settings-btn').addEventListener('click', openSettings);
+  $('settings-close').addEventListener('click', closeSettings);
+  $('settings-overlay').addEventListener('click', closeSettings);
+  $('theme-light').addEventListener('click', () => setTheme('light'));
+  $('theme-dark').addEventListener('click',  () => setTheme('dark'));
+  $('theme-auto').addEventListener('click',  () => setTheme('auto'));
+  $('update-app-btn').addEventListener('click', updateApp);
+
+  /* Update banner buttons */
+  $('update-now-btn').addEventListener('click', updateApp);
+  $('update-dismiss-btn').addEventListener('click', hideUpdateBanner);
+
   $('cur-sel').addEventListener('change', () => { S.cur = $('cur-sel').value; saveAll(); destroyCharts(); renderAll(); });
   $('export-btn').addEventListener('click', exportCSV);
   $('hist-export-btn').addEventListener('click', exportCSV);
@@ -1031,13 +1206,14 @@ function wireEvents() {
   loadState();
   buildMonths();
   setVal('cur-sel', S.cur);
-  if (S.isDark) applyTheme();
+  applyTheme();          /* applies S.theme (light / dark / auto) */
   applySidebar();
   $('ct-bar').classList.toggle('act',  S.chartType === 'bar');
   $('ct-line').classList.toggle('act', S.chartType === 'line');
   populateAccDropdowns();
   wireEvents();
   updateTransferAccDropdown();
+  initServiceWorker();   /* register SW + set up update detection */
   renderAll();
   renderCart();
   renderSl();
